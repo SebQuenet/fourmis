@@ -125,8 +125,8 @@ function App() {
       if (ant.isTired && ant.canBreed && !ant.hasBred) {
         ants.forEach(otherAnt => {
           if (ant.id !== otherAnt.id && otherAnt.isTired && otherAnt.canBreed) {
-            if (Math.abs(otherAnt.x - ant.x) < 30
-              && Math.abs(otherAnt.y - ant.y) < 30
+            if (Math.abs(otherAnt.x - ant.x) < 100
+              && Math.abs(otherAnt.y - ant.y) < 100
             ) {
               ant.hasBred = true;
               otherAnt.hasBred = true;

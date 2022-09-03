@@ -60,14 +60,11 @@ function App() {
       ant.age = ant.age + 1;
       if (ant.age < 5000) {
         ant.maturity = 'baby';
-        ant.size = 1;
       }
       else if (ant.age < 10000) {
         ant.maturity = 'child';
-        ant.size = 2;
       } else {
         ant.maturity = 'adult';
-        ant.size = 3;
       }
     });
 

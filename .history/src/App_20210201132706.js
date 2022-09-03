@@ -68,6 +68,7 @@ function App() {
       } else {
         ant.maturity = 'adult';
         ant.size = 3;
+        ant.canBreed = true;
       }
     });
 

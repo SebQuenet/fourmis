@@ -58,16 +58,17 @@ function App() {
     ants.forEach(ant => {
 
       ant.age = ant.age + 1;
-      if (ant.age < 5000) {
+      if (ant.age < 500) {
         ant.maturity = 'baby';
         ant.size = 1;
       }
-      else if (ant.age < 10000) {
+      else if (ant.age < 1000) {
         ant.maturity = 'child';
         ant.size = 2;
       } else {
         ant.maturity = 'adult';
         ant.size = 3;
+        ant.canBreed = true;
       }
     });
 
@@ -125,8 +126,8 @@ function App() {
       if (ant.isTired && ant.canBreed && !ant.hasBred) {
         ants.forEach(otherAnt => {
           if (ant.id !== otherAnt.id && otherAnt.isTired && otherAnt.canBreed) {
-            if (Math.abs(otherAnt.x - ant.x) < 30
-              && Math.abs(otherAnt.y - ant.y) < 30
+            if (Math.abs(otherAnt.x - ant.x) < 100
+              && Math.abs(otherAnt.y - ant.y) < 100
             ) {
               ant.hasBred = true;
               otherAnt.hasBred = true;

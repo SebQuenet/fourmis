@@ -15,8 +15,6 @@ const ants = [{
   canBreed: true,
   hasBred: false,
   size: 3,
-  age: 10000,
-  maturity: 'adult',
 }, {
   id: '86dcc793-5c7b-4a81-ba79-235dc66b89e1',
   x: 100,
@@ -29,8 +27,6 @@ const ants = [{
   canBreed: true,
   hasBred: false,
   size: 3,
-  age: 10000,
-  maturity: 'adult',
 }, {
   id: 'fe167419-9123-4ca1-b2b8-6219a525b424',
   x: 150,
@@ -43,8 +39,6 @@ const ants = [{
   canBreed: true,
   hasBred: false,
   size: 3,
-  age: 10000,
-  maturity: 'adult',
 },
 ];
 
@@ -56,27 +50,10 @@ function App() {
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     ants.forEach(ant => {
-
-      ant.age = ant.age + 1;
-      if (ant.age < 5000) {
-        ant.maturity = 'baby';
-        ant.size = 1;
-      }
-      else if (ant.age < 10000) {
-        ant.maturity = 'child';
-        ant.size = 2;
-      } else {
-        ant.maturity = 'adult';
-        ant.size = 3;
-      }
-    });
-
-
-    ants.forEach(ant => {
       ctx.beginPath();
       ctx.fillStyle = ant.color;
       ctx.arc(ant.x, ant.y, ant.size, 0, 2 * Math.PI);
-      ctx.fill();
+      ctx.fill()
     });
 
     ants.forEach(ant => {
@@ -142,7 +119,6 @@ function App() {
                 canBreed: false,
                 hasBred: false,
                 size: 1,
-                age: 0,
               }
               ants.push(newAnt);
             }
