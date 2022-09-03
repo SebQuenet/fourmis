@@ -155,6 +155,9 @@ let ants = [
 
 const handleBirthday = () => {
   ants.forEach((ant) => {
+    if (ant.bredRest > 0) {
+      ant.bredRest = ant.bredRest - 1;
+    }
     ant.age = ant.age + 1;
     if (ant.age < 100) {
       ant.maturity = "newborn";
@@ -186,7 +189,6 @@ const handleBirthday = () => {
 const drawAnts = (ctx) => {
   ants.forEach((ant) => {
     ctx.beginPath();
-    debugger;
     console.log(ant.side);
     ctx.fillStyle = sides[ant.side].color;
     ctx.strokeStyle = "#ffffff";
@@ -196,6 +198,43 @@ const drawAnts = (ctx) => {
       ctx.lineWidth = 1;
       ctx.stroke();
     }
+
+    ctx.beginPath();
+    ctx.moveTo(ant.x, ant.y);
+    ctx.lineTo(
+      ant.x + Math.cos(ant.direction) * ant.size * 2,
+      ant.y + Math.sin(ant.direction) * ant.size * 2
+    );
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = sides[ant.side].color;
+    ctx.stroke();
+
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(ant.x, ant.y);
+    ctx.lineTo(
+      ant.x + Math.cos(ant.direction - Math.PI / 6) * ant.size * 10,
+      ant.y + Math.sin(ant.direction - Math.PI / 6) * ant.size * 10
+    );
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = sides[ant.side].color;
+    ctx.stroke();
+
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(ant.x, ant.y);
+    ctx.lineTo(
+      ant.x + Math.cos(ant.direction + Math.PI / 6) * ant.size * 10,
+      ant.y + Math.sin(ant.direction + Math.PI / 6) * ant.size * 10
+    );
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = sides[ant.side].color;
+    ctx.stroke();
+
+    ctx.lineWidth = 0.25;
+    ctx.strokeRect(ant.x - 30, ant.y - 30, 60, 60);
+    ctx.strokeStyle = "#333333";
+    ctx.strokeRect(ant.x - 50, ant.y - 50, 100, 100);
   });
 };
 
@@ -214,12 +253,47 @@ const handleDirectionChange = () => {
       ant.direction = Math.PI / 2;
     }
 
+    const neighbors = ants.filter(
+      (otherAnt) =>
+        Math.abs(otherAnt.x - ant.x) < 50 &&
+        Math.abs(otherAnt.y - ant.y) < 50 &&
+        otherAnt.id !== ant.id
+    );
+    const adultNeighbors = neighbors.filter(
+      (otherAnt) => isAntAdult(otherAnt) && otherAnt.id !== ant.id
+    );
+
+    const threats = adultNeighbors.filter((otherAnt) =>
+      canAntKillOtherAnt(otherAnt, ant)
+    );
+    if (threats.length > 0) {
+      debugger;
+      const threat = threats[0];
+      ant.direction = Math.PI + Math.atan2(threat.y - ant.y, threat.x - ant.x);
+    }
+
+    const mates = adultNeighbors.filter(
+      (otherAnt) =>
+        areAntsSameSide(ant, otherAnt) &&
+        canBothAntsHaveBaby(ant, otherAnt) &&
+        isAntAdult(ant)
+    );
+    if (mates.length > 0) {
+      const mate = mates[0];
+      ant.direction = Math.atan2(mate.y - ant.y, mate.x - ant.x);
+    }
+
+    /*
+    const preys = neighbors.filter((otherAnt) =>
+      canAntKillOtherAnt(ant, otherAnt)
+    );
+    if (preys.length > 0) {
+      const prey = preys[0];
+      ant.direction = Math.atan2(prey.y - ant.y, prey.x - ant.x);
+    }
+    */
     ant.direction =
       -Math.PI / 18 + (Math.random() * Math.PI) / 9 + ant.direction;
-
-    if (ant.bredRest > 0) {
-      ant.bredRest = ant.bredRest - 1;
-    }
   });
 };
 
@@ -280,7 +354,6 @@ function handleBirth(ant, otherAnt) {
     generation: ant.generation + 1,
     side: ant.side,
   };
-  debugger;
   ants.push(newAnt);
 }
 
