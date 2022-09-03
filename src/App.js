@@ -7,15 +7,46 @@ import AntHill from "./components/Anthill";
 const DEFAULT_SPEED = 1;
 const DEFAULT_ENERGY = 2;
 
+const HEN_SIDE = "HEN_SIDE";
+const VIPER_SIDE = "VIPER_SIDE";
+const FOX_SIDE = "FOX_SIDE";
+
+const sides = {
+  [HEN_SIDE]: {
+    side: HEN_SIDE,
+    color: "#995500",
+    canKill: { [VIPER_SIDE]: true },
+  },
+  [VIPER_SIDE]: {
+    side: VIPER_SIDE,
+    color: "#44CC44",
+    canKill: { [FOX_SIDE]: true },
+  },
+  [FOX_SIDE]: {
+    side: FOX_SIDE,
+    color: "#CC4444",
+    canKill: { [HEN_SIDE]: true },
+  },
+};
+
 const areAntsSameGeneration = (ant, otherAnt) =>
   ant.generation === otherAnt.generation;
 const areNotSameAnts = (ant, otherAnt) => ant.id !== otherAnt.id;
 const canBothAntsBreed = (ant, otherAnt) => ant.canBreed && otherAnt.canBreed;
 const areCloseEnough = (ant, otherAnt) =>
   Math.abs(otherAnt.x - ant.x) < 30 && Math.abs(otherAnt.y - ant.y) < 30;
+const areAntsSameSide = (ant, otherAnt) => ant.side === otherAnt.side;
+
+const isContactBetween = (ant, otherAnt) =>
+  areCloseEnough(ant, otherAnt) && areNotSameAnts(ant, otherAnt);
 
 const canBothAntsHaveBaby = (ant, otherAnt) =>
   ant.bredRest === 0 && otherAnt.bredRest === 0;
+
+const canAntKillOtherAnt = (ant, otherAnt) =>
+  sides[ant.side].canKill[otherAnt.side];
+
+const isAntAdult = (ant) => ant.maturity === "adult";
 
 let ants = [
   {
@@ -33,6 +64,7 @@ let ants = [
     age: 1,
     maturity: "child",
     generation: 1,
+    side: HEN_SIDE,
   },
   {
     id: "73a97ab7-7328-4823-9469-68832d0d08d8",
@@ -49,6 +81,7 @@ let ants = [
     age: 1,
     maturity: "child",
     generation: 1,
+    side: HEN_SIDE,
   },
   {
     id: "d00c60d3-523f-4f7f-a59d-72a6ce8335cb",
@@ -65,6 +98,7 @@ let ants = [
     age: 1,
     maturity: "child",
     generation: 1,
+    side: FOX_SIDE,
   },
   {
     id: "40c9c1e7-42e4-46c2-8ab6-cc447c52d8e8",
@@ -81,6 +115,7 @@ let ants = [
     age: 1,
     maturity: "child",
     generation: 1,
+    side: FOX_SIDE,
   },
   {
     id: "86dcc793-5c7b-4a81-ba79-235dc66b89e1",
@@ -97,6 +132,7 @@ let ants = [
     age: 1,
     maturity: "child",
     generation: 1,
+    side: VIPER_SIDE,
   },
   {
     id: "fe167419-9123-4ca1-b2b8-6DEFAULT_ENERGY9a525b424",
@@ -113,6 +149,7 @@ let ants = [
     age: 1,
     maturity: "child",
     generation: 1,
+    side: VIPER_SIDE,
   },
 ];
 
@@ -149,7 +186,9 @@ const handleBirthday = () => {
 const drawAnts = (ctx) => {
   ants.forEach((ant) => {
     ctx.beginPath();
-    ctx.fillStyle = ant.color;
+    debugger;
+    console.log(ant.side);
+    ctx.fillStyle = sides[ant.side].color;
     ctx.strokeStyle = "#ffffff";
     ctx.arc(ant.x, ant.y, ant.size, 0, 2 * Math.PI);
     ctx.fill();
@@ -211,46 +250,57 @@ const handleFatigue = () => {
   });
 };
 
-const handleBirths = () => {
+function handleBirth(ant, otherAnt) {
+  ant.bredRest = 800;
+  otherAnt.bredRest = 800;
+
+  const [r1, g1, b1] = hex.rgb(ant.color.substring(1));
+  const [r2, g2, b2] = hex.rgb(otherAnt.color.substring(1));
+
+  const rgbNewAnt = [
+    Math.floor(Math.sqrt((r1 * r1 + r2 * r2) / 2)),
+    Math.floor(Math.sqrt((g1 * g1 + g2 * g2) / 2)),
+    Math.floor(Math.sqrt((b1 * b1 + b2 * b2) / 2)),
+  ];
+
+  console.log(Math.floor(ant.speed + otherAnt.speed) / 2);
+  const newAnt = {
+    id: uuidv4(),
+    x: Math.floor(ant.x + otherAnt.x) / 2,
+    y: Math.floor(ant.y + otherAnt.y) / 2,
+    direction: 0,
+    speed: Math.floor(ant.speed + otherAnt.speed) / 2,
+    energy: DEFAULT_ENERGY,
+    color: `#${rgb.hex(rgbNewAnt)}`,
+    canBreed: false,
+    hasBred: false,
+    size: 1,
+    age: 0,
+    bredRest: 0,
+    generation: ant.generation + 1,
+    side: ant.side,
+  };
+  debugger;
+  ants.push(newAnt);
+}
+
+const handleContacts = () => {
   ants.forEach((ant) => {
     ants.forEach((otherAnt) => {
-      if (
-        areAntsSameGeneration(ant, otherAnt) &&
-        canBothAntsBreed(ant, otherAnt) &&
-        areNotSameAnts(ant, otherAnt) &&
-        canBothAntsHaveBaby(ant, otherAnt) &&
-        areCloseEnough(ant, otherAnt)
-      ) {
-        ant.bredRest = 800;
-        otherAnt.bredRest = 800;
-
-        const [r1, g1, b1] = hex.rgb(ant.color.substring(1));
-        const [r2, g2, b2] = hex.rgb(otherAnt.color.substring(1));
-
-        const rgbNewAnt = [
-          Math.floor(Math.sqrt((r1 * r1 + r2 * r2) / 2)),
-          Math.floor(Math.sqrt((g1 * g1 + g2 * g2) / 2)),
-          Math.floor(Math.sqrt((b1 * b1 + b2 * b2) / 2)),
-        ];
-
-        console.log(Math.floor(ant.speed + otherAnt.speed) / 2);
-        const newAnt = {
-          id: uuidv4(),
-          x: Math.floor(ant.x + otherAnt.x) / 2,
-          y: Math.floor(ant.y + otherAnt.y) / 2,
-          direction: 0,
-          speed: Math.floor(ant.speed + otherAnt.speed) / 2,
-          energy: DEFAULT_ENERGY,
-          color: `#${rgb.hex(rgbNewAnt)}`,
-          canBreed: false,
-          hasBred: false,
-          size: 1,
-          age: 0,
-          bredRest: 0,
-          generation: ant.generation + 1,
-        };
-        debugger;
-        ants.push(newAnt);
+      if (isContactBetween(ant, otherAnt)) {
+        if (
+          areAntsSameSide(ant, otherAnt) &&
+          canBothAntsBreed(ant, otherAnt) &&
+          canBothAntsHaveBaby(ant, otherAnt)
+        ) {
+          handleBirth(ant, otherAnt);
+        } else {
+          if (!areAntsSameSide(ant, otherAnt)) {
+            if (canAntKillOtherAnt(ant, otherAnt) && isAntAdult(ant)) {
+              otherAnt.isDead = true;
+            }
+          }
+        }
       }
     });
   });
@@ -273,8 +323,7 @@ function App() {
     drawAnts(ctx);
     handleDirectionChange();
     handleMoveAnts();
-    // handleFatigue();
-    handleBirths();
+    handleContacts();
   };
 
   return (
