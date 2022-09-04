@@ -268,6 +268,8 @@ const handleMoveAnts = () => {
     let isAntInsideWall = false;
     listOfWalls.forEach((wall) => {
       if (wall.isGate && !enableGate) {
+        ant.x = wantedX;
+        ant.y = wantedY;
         return;
       }
       if (
