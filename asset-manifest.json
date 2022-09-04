@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/fourmis/static/css/main.c11595b3.chunk.css",
-    "main.js": "/fourmis/static/js/main.20845f97.chunk.js",
-    "main.js.map": "/fourmis/static/js/main.20845f97.chunk.js.map",
+    "main.js": "/fourmis/static/js/main.0f5cba3b.chunk.js",
+    "main.js.map": "/fourmis/static/js/main.0f5cba3b.chunk.js.map",
     "runtime-main.js": "/fourmis/static/js/runtime-main.7295afda.js",
     "runtime-main.js.map": "/fourmis/static/js/runtime-main.7295afda.js.map",
     "static/js/2.58a66c7b.chunk.js": "/fourmis/static/js/2.58a66c7b.chunk.js",
@@ -17,6 +17,6 @@
     "static/js/runtime-main.7295afda.js",
     "static/js/2.58a66c7b.chunk.js",
     "static/css/main.c11595b3.chunk.css",
-    "static/js/main.20845f97.chunk.js"
+    "static/js/main.0f5cba3b.chunk.js"
   ]
 }
