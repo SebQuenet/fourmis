@@ -3,15 +3,18 @@ import { hex, rgb } from "color-convert";
 
 import "./App.css";
 import AntHill from "./components/Anthill";
+import { drawAnts } from "./drawAnts";
 
 const DEFAULT_SPEED = 1;
 const DEFAULT_ENERGY = 2;
+
+export const SENSOR_AREA = 80;
 
 const HEN_SIDE = "HEN_SIDE";
 const VIPER_SIDE = "VIPER_SIDE";
 const FOX_SIDE = "FOX_SIDE";
 
-const sides = {
+export const sides = {
   [HEN_SIDE]: {
     side: HEN_SIDE,
     color: "#995500",
@@ -29,6 +32,11 @@ const sides = {
   },
 };
 
+export let displayAntenna = false;
+export let displayWillBreed = false;
+export let displaySensorArea = false;
+export let displayEyes = true;
+
 const areAntsSameGeneration = (ant, otherAnt) =>
   ant.generation === otherAnt.generation;
 const areNotSameAnts = (ant, otherAnt) => ant.id !== otherAnt.id;
@@ -44,114 +52,67 @@ const canBothAntsHaveBaby = (ant, otherAnt) =>
   ant.bredRest === 0 && otherAnt.bredRest === 0;
 
 const canAntKillOtherAnt = (ant, otherAnt) =>
-  sides[ant.side].canKill[otherAnt.side];
+  ant.maturity === "adult" && sides[ant.side].canKill[otherAnt.side];
 
 const isAntAdult = (ant) => ant.maturity === "adult";
 
-let ants = [
-  {
-    id: "73948400-5866-49c0-8f61-af44f17b3a87",
-    x: 60,
-    y: 110,
-    direction: Math.PI / 2,
-    speed: DEFAULT_SPEED,
-    energy: DEFAULT_ENERGY,
-    isTired: false,
-    color: "#44CCCC",
-    canBreed: false,
-    bredRest: 0,
-    size: 1,
-    age: 1,
-    maturity: "child",
-    generation: 1,
-    side: HEN_SIDE,
+const randomSide = () => {
+  const sidesArray = Object.keys(sides);
+  const randomIndex = Math.floor(Math.random() * sidesArray.length);
+  return sidesArray[randomIndex];
+};
+
+const antFactory = ({ side }) => ({
+  id: uuidv4(),
+  x: Math.floor(Math.random() * 3600) + 200,
+  y: Math.floor(Math.random() * 1600) + 200,
+  direction: Math.PI / 2,
+  speed: DEFAULT_SPEED,
+  energy: DEFAULT_ENERGY,
+  isTired: false,
+  color: "#44CCCC",
+  canBreed: false,
+  bredRest: 0,
+  size: 1,
+  age: 1,
+  maturity: "child",
+  generation: 1,
+  side: side ? side : randomSide(),
+});
+
+export let ants = [];
+
+for (var i = 0; i < 120; i++) {
+  ants.push(antFactory({}));
+}
+
+document.addEventListener(
+  "keydown",
+  (e) => {
+    if (e.key === "v") {
+      ants.push(antFactory({ side: VIPER_SIDE }));
+    }
+    if (e.key === "f") {
+      ants.push(antFactory({ side: FOX_SIDE }));
+    }
+    if (e.key === "h") {
+      ants.push(antFactory({ side: HEN_SIDE }));
+    }
+    if (e.key === "b") {
+      displayWillBreed = !displayWillBreed;
+    }
+    if (e.key === "a") {
+      displayAntenna = !displayAntenna;
+    }
+    if (e.key === "s") {
+      displaySensorArea = !displaySensorArea;
+    }
+    if (e.key === "e") {
+      displayEyes = !displayEyes;
+    }
   },
-  {
-    id: "73a97ab7-7328-4823-9469-68832d0d08d8",
-    x: 110,
-    y: 60,
-    direction: Math.PI / 2,
-    speed: DEFAULT_SPEED,
-    energy: DEFAULT_ENERGY,
-    isTired: false,
-    color: "#CCCC44",
-    canBreed: false,
-    bredRest: 0,
-    size: 1,
-    age: 1,
-    maturity: "child",
-    generation: 1,
-    side: HEN_SIDE,
-  },
-  {
-    id: "d00c60d3-523f-4f7f-a59d-72a6ce8335cb",
-    x: 60,
-    y: 60,
-    direction: Math.PI / 2,
-    speed: DEFAULT_SPEED,
-    energy: DEFAULT_ENERGY,
-    isTired: false,
-    color: "#CC44CC",
-    canBreed: false,
-    bredRest: 0,
-    size: 1,
-    age: 1,
-    maturity: "child",
-    generation: 1,
-    side: FOX_SIDE,
-  },
-  {
-    id: "40c9c1e7-42e4-46c2-8ab6-cc447c52d8e8",
-    x: 50,
-    y: 50,
-    direction: Math.PI / 2,
-    speed: DEFAULT_SPEED,
-    energy: DEFAULT_ENERGY,
-    isTired: false,
-    color: "#4444CC",
-    canBreed: false,
-    bredRest: 0,
-    size: 1,
-    age: 1,
-    maturity: "child",
-    generation: 1,
-    side: FOX_SIDE,
-  },
-  {
-    id: "86dcc793-5c7b-4a81-ba79-235dc66b89e1",
-    x: 10,
-    y: 10,
-    direction: 0,
-    speed: DEFAULT_SPEED,
-    energy: DEFAULT_ENERGY,
-    isTired: false,
-    color: "#44CC44",
-    canBreed: false,
-    bredRest: 0,
-    size: 2,
-    age: 1,
-    maturity: "child",
-    generation: 1,
-    side: VIPER_SIDE,
-  },
-  {
-    id: "fe167419-9123-4ca1-b2b8-6DEFAULT_ENERGY9a525b424",
-    x: 150,
-    y: 10,
-    direction: 0,
-    speed: DEFAULT_SPEED,
-    energy: DEFAULT_ENERGY,
-    isTired: false,
-    color: "#CC4444",
-    canBreed: false,
-    bredRest: 0,
-    size: 1,
-    age: 1,
-    maturity: "child",
-    generation: 1,
-    side: VIPER_SIDE,
-  },
-];
+  false
+);
 
 const handleBirthday = () => {
   ants.forEach((ant) => {
@@ -165,98 +126,36 @@ const handleBirthday = () => {
       ant.speed = 0;
     } else if (ant.age < 200) {
       ant.maturity = "baby";
-      ant.size = 1;
+      ant.size = 2;
       ant.speed = DEFAULT_SPEED;
     } else if (ant.age < 600) {
       ant.maturity = "child";
-      ant.size = 2;
+      ant.size = 3;
+      ant.speed = DEFAULT_SPEED + 1;
     } else if (ant.age < 4000) {
       ant.maturity = "adult";
-      ant.size = 3;
+      ant.size = 8;
       ant.canBreed = true;
+      ant.speed = DEFAULT_SPEED + 2;
     } else if (ant.age < 5000) {
       ant.maturity = "elderly";
-      ant.size = 2;
+      ant.size = 5;
       ant.canBreed = false;
       ant.speed = 1;
       ant.energy = 5;
+      ant.speed = DEFAULT_SPEED;
     } else {
       ant.isDead = true;
     }
   });
 };
 
-const drawAnts = (ctx) => {
-  ants.forEach((ant) => {
-    ctx.beginPath();
-    console.log(ant.side);
-    ctx.fillStyle = sides[ant.side].color;
-    ctx.strokeStyle = "#ffffff";
-    ctx.arc(ant.x, ant.y, ant.size, 0, 2 * Math.PI);
-    ctx.fill();
-    if (ant.bredRest > 0) {
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    }
-
-    ctx.beginPath();
-    ctx.moveTo(ant.x, ant.y);
-    ctx.lineTo(
-      ant.x + Math.cos(ant.direction) * ant.size * 2,
-      ant.y + Math.sin(ant.direction) * ant.size * 2
-    );
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = sides[ant.side].color;
-    ctx.stroke();
-
-    ctx.lineWidth = 0.5;
-    ctx.beginPath();
-    ctx.moveTo(ant.x, ant.y);
-    ctx.lineTo(
-      ant.x + Math.cos(ant.direction - Math.PI / 6) * ant.size * 10,
-      ant.y + Math.sin(ant.direction - Math.PI / 6) * ant.size * 10
-    );
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = sides[ant.side].color;
-    ctx.stroke();
-
-    ctx.lineWidth = 0.5;
-    ctx.beginPath();
-    ctx.moveTo(ant.x, ant.y);
-    ctx.lineTo(
-      ant.x + Math.cos(ant.direction + Math.PI / 6) * ant.size * 10,
-      ant.y + Math.sin(ant.direction + Math.PI / 6) * ant.size * 10
-    );
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = sides[ant.side].color;
-    ctx.stroke();
-
-    ctx.lineWidth = 0.25;
-    ctx.strokeRect(ant.x - 30, ant.y - 30, 60, 60);
-    ctx.strokeStyle = "#333333";
-    ctx.strokeRect(ant.x - 50, ant.y - 50, 100, 100);
-  });
-};
-
 const handleDirectionChange = () => {
   ants.forEach((ant) => {
-    if (ant.x > 500) {
-      ant.direction = Math.PI;
-    }
-    if (ant.x < 0) {
-      ant.direction = 0;
-    }
-    if (ant.y > 500) {
-      ant.direction = (3 * Math.PI) / 2;
-    }
-    if (ant.y < 0) {
-      ant.direction = Math.PI / 2;
-    }
-
     const neighbors = ants.filter(
       (otherAnt) =>
-        Math.abs(otherAnt.x - ant.x) < 50 &&
-        Math.abs(otherAnt.y - ant.y) < 50 &&
+        Math.abs(otherAnt.x - ant.x) < SENSOR_AREA &&
+        Math.abs(otherAnt.y - ant.y) < SENSOR_AREA &&
         otherAnt.id !== ant.id
     );
     const adultNeighbors = neighbors.filter(
@@ -267,7 +166,6 @@ const handleDirectionChange = () => {
       canAntKillOtherAnt(otherAnt, ant)
     );
     if (threats.length > 0) {
-      debugger;
       const threat = threats[0];
       ant.direction = Math.PI + Math.atan2(threat.y - ant.y, threat.x - ant.x);
     }
@@ -292,6 +190,20 @@ const handleDirectionChange = () => {
       ant.direction = Math.atan2(prey.y - ant.y, prey.x - ant.x);
     }
     */
+
+    if (ant.x > 4000) {
+      ant.direction = Math.PI;
+    }
+    if (ant.x < 0) {
+      ant.direction = 0;
+    }
+    if (ant.y > 2000) {
+      ant.direction = (3 * Math.PI) / 2;
+    }
+    if (ant.y < 0) {
+      ant.direction = Math.PI / 2;
+    }
+
     ant.direction =
       -Math.PI / 18 + (Math.random() * Math.PI) / 9 + ant.direction;
   });
@@ -337,7 +249,6 @@ function handleBirth(ant, otherAnt) {
     Math.floor(Math.sqrt((b1 * b1 + b2 * b2) / 2)),
   ];
 
-  console.log(Math.floor(ant.speed + otherAnt.speed) / 2);
   const newAnt = {
     id: uuidv4(),
     x: Math.floor(ant.x + otherAnt.x) / 2,
@@ -393,7 +304,7 @@ function App() {
     ctx.fillText(frameCount, 10, 10);
     handleBirthday();
     handleDeaths();
-    drawAnts(ctx);
+    drawAnts(ctx, ants);
     handleDirectionChange();
     handleMoveAnts();
     handleContacts();

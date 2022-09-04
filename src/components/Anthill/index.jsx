@@ -23,7 +23,11 @@ const AntHill = (props) => {
     }
 
   }, [draw]);
-  return <canvas width={window.innerWidth / 2} height={window.innerHeight / 2} className={styles.canvasSupport} ref={canvasRef}{...props}></canvas>
+  console.log(window.innerWidth / 2);
+  console.log(window.innerHeight/ 2);
+  const width = 4000;
+  const height = 2000;
+  return <canvas width={width } height={height } className={styles.canvasSupport} ref={canvasRef}{...props}></canvas>
 };
 
 export default AntHill;
