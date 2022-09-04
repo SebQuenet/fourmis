@@ -43,15 +43,20 @@ export let displaySensorArea = false;
 export let displayEyes = true;
 export let displayWalls = true;
 export let enablePrey = false;
+export let enableGate = false;
 export let displayDebug = false;
 
 export const listOfDeaths = [];
 export const listOfWalls = [
+  { x: 2000, y: 0, width: 10, height: 2000, isGate: true },
+  { x: 1000, y: 1000, width: 2000, height: 10, isGate: true },
   { x: 1600, y: 1000, width: 800, height: 10 },
   { x: 1000, y: 600, width: 10, height: 800 },
   { x: 3000, y: 600, width: 10, height: 800 },
   { x: 1600, y: 400, width: 800, height: 10 },
   { x: 1600, y: 1600, width: 800, height: 10 },
+  { x: 0, y: 600, width: 1000, height: 10 },
+  { x: 3000, y: 1400, width: 1000, height: 10 },
 ];
 
 const areAntsSameGeneration = (ant, otherAnt) =>
@@ -141,6 +146,9 @@ document.addEventListener(
     }
     if (e.key === "d") {
       displayDebug = !displayDebug;
+    }
+    if (e.key === "g") {
+      enableGate = !enableGate;
     }
   },
   false
@@ -259,6 +267,9 @@ const handleMoveAnts = () => {
 
     let isAntInsideWall = false;
     listOfWalls.forEach((wall) => {
+      if (wall.isGate && !enableGate) {
+        return;
+      }
       if (
         wantedX >= wall.x &&
         wantedX <= wall.x + wall.width &&
@@ -355,7 +366,11 @@ const handleDeaths = () => {
 const drawWalls = (ctx) => {
   if (displayWalls) {
     listOfWalls.forEach((wall) => {
-      ctx.fillStyle = "#888888";
+      if (wall.isGate && !enableGate) {
+        ctx.fillStyle = "#333333";
+      } else {
+        ctx.fillStyle = "#888888";
+      }
       ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
     });
   }
@@ -383,6 +398,13 @@ const displayHelp = (ctx) => {
     } else {
       ctx.fillStyle = "#808080";
       ctx.fillText("Prey mode (K) disabled", 30, 200);
+    }
+    if (enableGate) {
+      ctx.fillStyle = "#CCCCCC";
+      ctx.fillText("Gate (G) enabled", 30, 240);
+    } else {
+      ctx.fillStyle = "#808080";
+      ctx.fillText("Gate (G) disabled", 30, 240);
     }
   } else {
     ctx.fillStyle = "#808080";
