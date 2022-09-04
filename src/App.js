@@ -51,6 +51,8 @@ export let displayEyes = true;
 export let displayWalls = true;
 export let enablePrey = false;
 export let enableGate = false;
+export let enableSenescence = true;
+export let enableDieOnFood = true;
 export let displayDebug = false;
 export let displayFood = false;
 
@@ -162,6 +164,12 @@ document.addEventListener(
     if (e.key === "o") {
       displayFood = !displayFood;
     }
+    if (e.key === "x") {
+      enableDieOnFood = !enableDieOnFood;
+    }
+    if (e.key === "c") {
+      enableSenescence = !enableSenescence;
+    }
   },
   false
 );
@@ -186,12 +194,12 @@ const handleBirthday = (frameCount) => {
       ant.maturity = "adult";
       ant.size = 8;
       ant.canBreed = true;
-    } else if (ant.age < 10000) {
+    } else if (ant.age < 10000 && enableSenescence) {
       ant.maturity = "elderly";
       ant.size = 7;
       ant.canBreed = false;
       ant.energy = 5;
-    } else {
+    } else if (enableSenescence) {
       ant.isDead = true;
     }
   });
@@ -452,6 +460,20 @@ const displayHelp = (ctx) => {
       ctx.fillStyle = "#808080";
       ctx.fillText("Food (O) hidden", 30, 320);
     }
+    if (enableDieOnFood) {
+      ctx.fillStyle = "#FF0000";
+      ctx.fillText("Die on food (X) enabled", 30, 360);
+    } else {
+      ctx.fillStyle = "#808080";
+      ctx.fillText("Die on food (X) disabled", 30, 360);
+    }
+    if (enableSenescence) {
+      ctx.fillStyle = "#FF0000";
+      ctx.fillText("Die on aging (C) enabled", 30, 400);
+    } else {
+      ctx.fillStyle = "#808080";
+      ctx.fillText("Die on aging (C) disabled", 30, 400);
+    }
   } else {
     ctx.fillStyle = "#808080";
     ctx.fillText("Display debug (D) disabled", 30, 40);
@@ -464,7 +486,7 @@ const handleFood = () => {
     .forEach((ant) => {
       debugger;
       ant.food = ant.food - 1;
-      if (ant.food <= 0) {
+      if (ant.food <= 0 && enableDieOnFood) {
         ant.isDead = true;
       }
     });
