@@ -23,6 +23,7 @@ const FOX_SIDE = "FOX_SIDE";
 const NUMBER_PER_SIDE = 30;
 
 const FOOD_LOW = 1000;
+const FOOD_BOOST_NEWBORN = 600;
 
 export const sides = {
   [HEN_SIDE]: {
@@ -361,7 +362,7 @@ function handleBirth(ant, otherAnt) {
     age: 0,
     bredRest: 0,
     generation: ant.generation + 1,
-    food: Math.floor(ant.food + otherAnt.food) / 2 + FOOD_LOW,
+    food: Math.floor(ant.food + otherAnt.food) / 2 + FOOD_BOOST_NEWBORN,
     side: ant.side,
   };
   ants.push(newAnt);
