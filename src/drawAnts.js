@@ -6,6 +6,7 @@ import {
   displayAntenna,
   displaySensorArea,
   displayEyes,
+  displayFood,
   SENSOR_AREA,
   NORMAL_MODE,
   FLEEING_MODE,
@@ -140,6 +141,21 @@ export const drawAnts = (ctx, ants) => {
       ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = 1;
       ctx.stroke();
+    }
+    if (displayFood) {
+      if (ant.food < 500) {
+        ctx.strokeStyle = "#ff0000";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      } else if (ant.food < 1000) {
+        ctx.strokeStyle = "#ffff00";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      } else if (ant.food < 2000) {
+        ctx.strokeStyle = "#00ff00";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
     }
 
     ctx.beginPath();
