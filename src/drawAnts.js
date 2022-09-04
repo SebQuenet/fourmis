@@ -7,7 +7,6 @@ import {
   displaySensorArea,
   displayEyes,
   displayFood,
-  SENSOR_AREA,
   NORMAL_MODE,
   FLEEING_MODE,
   HUNTING_MODE,
@@ -17,10 +16,27 @@ import {
 const drawSensorArea = (ctx, ant) => {
   ctx.lineWidth = 0.25;
   ctx.strokeRect(
-    ant.x - SENSOR_AREA / 2,
-    ant.y - SENSOR_AREA / 2,
-    SENSOR_AREA,
-    SENSOR_AREA
+    ant.x - ant.sensorArea / 2,
+    ant.y - ant.sensorArea / 2,
+    ant.sensorArea,
+    ant.sensorArea
+  );
+  ctx.font = "16px monospace";
+  ctx.fillStyle = sides[ant.side].color;
+  ctx.fillText(
+    `${Math.floor(ant.sensorArea)}`,
+    ant.x - ant.sensorArea / 2,
+    ant.y - ant.sensorArea / 2
+  );
+  ctx.fillText(
+    `${Math.floor(ant.speed * 10)}`,
+    ant.x + ant.sensorArea / 2 - 12,
+    ant.y - ant.sensorArea / 2
+  );
+  ctx.fillText(
+    `${Math.floor(ant.generation)}`,
+    ant.x,
+    ant.y - ant.sensorArea / 2
   );
 };
 

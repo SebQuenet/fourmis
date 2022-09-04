@@ -9,7 +9,7 @@ const DEFAULT_SPEED = 1;
 const DEFAULT_ENERGY = 2;
 const DEFAULT_FOOD = 4000;
 
-export const SENSOR_AREA = 80;
+export const DEFAULT_SENSOR_AREA = 80;
 
 export const NORMAL_MODE = "NORMAL_MODE";
 export const FLEEING_MODE = "FLEEING_MODE";
@@ -55,9 +55,32 @@ export let enableSenescence = true;
 export let enableDieOnFood = true;
 export let displayDebug = false;
 export let displayFood = false;
+export let enableChildKills = false;
+
+const WALL_TEMPLATES = [
+  [],
+  [
+    { x: 2000, y: 0, width: 10, height: 2000, isGate: true },
+    { x: 0, y: 1000, width: 4000, height: 10, isGate: true },
+  ],
+  [
+    { x: 2000, y: 0, width: 10, height: 2000, isGate: true },
+    { x: 1000, y: 1000, width: 2000, height: 10, isGate: true },
+    { x: 1600, y: 1000, width: 800, height: 10 },
+    { x: 1000, y: 600, width: 10, height: 800 },
+    { x: 3000, y: 600, width: 10, height: 800 },
+    { x: 1600, y: 400, width: 800, height: 10 },
+    { x: 1600, y: 1600, width: 800, height: 10 },
+    { x: 0, y: 600, width: 1000, height: 10 },
+    { x: 3000, y: 1400, width: 1000, height: 10 },
+  ],
+];
+
+export const listOfWalls =
+  WALL_TEMPLATES[Math.floor(Math.random() * WALL_TEMPLATES.length)];
 
 export const listOfDeaths = [];
-export const listOfWalls = [
+/*export const listOfWalls = [
   { x: 2000, y: 0, width: 10, height: 2000, isGate: true },
   { x: 1000, y: 1000, width: 2000, height: 10, isGate: true },
   { x: 1600, y: 1000, width: 800, height: 10 },
@@ -68,6 +91,7 @@ export const listOfWalls = [
   { x: 0, y: 600, width: 1000, height: 10 },
   { x: 3000, y: 1400, width: 1000, height: 10 },
 ];
+*/
 
 const areAntsSameGeneration = (ant, otherAnt) =>
   ant.generation === otherAnt.generation;
@@ -83,9 +107,17 @@ const isContactBetween = (ant, otherAnt) =>
 const canBothAntsHaveBaby = (ant, otherAnt) =>
   ant.bredRest === 0 && otherAnt.bredRest === 0;
 
-const canAntKillOtherAnt = (ant, otherAnt) =>
-  ant.maturity === "adult" && sides[ant.side].canKill[otherAnt.side];
-
+const canAntKillOtherAnt = (ant, otherAnt) => {
+  if (
+    !enableChildKills &&
+    (otherAnt.maturity === "newborn" ||
+      otherAnt.maturity === "baby" ||
+      otherAnt.maturity === "child")
+  ) {
+    return false;
+  }
+  return ant.maturity === "adult" && sides[ant.side].canKill[otherAnt.side];
+};
 const isAntAdult = (ant) => ant.maturity === "adult";
 
 const randomSide = () => {
@@ -102,6 +134,7 @@ const antFactory = ({ side }) => ({
   food: DEFAULT_FOOD,
   speed: DEFAULT_SPEED,
   energy: DEFAULT_ENERGY,
+  sensorArea: DEFAULT_SENSOR_AREA,
   isTired: false,
   color: "#44CCCC",
   canBreed: false,
@@ -170,6 +203,9 @@ document.addEventListener(
     if (e.key === "c") {
       enableSenescence = !enableSenescence;
     }
+    if (e.key === "i") {
+      enableChildKills = !enableChildKills;
+    }
   },
   false
 );
@@ -213,8 +249,8 @@ const handleDirectionChange = () => {
     ant.mode = NORMAL_MODE;
     const neighbors = ants.filter(
       (otherAnt) =>
-        Math.abs(otherAnt.x - ant.x) < SENSOR_AREA &&
-        Math.abs(otherAnt.y - ant.y) < SENSOR_AREA &&
+        Math.abs(otherAnt.x - ant.x) < ant.sensorArea &&
+        Math.abs(otherAnt.y - ant.y) < ant.sensorArea &&
         otherAnt.id !== ant.id
     );
     const adultNeighbors = neighbors.filter(
@@ -354,12 +390,17 @@ function handleBirth(ant, otherAnt) {
 
   const speed =
     Math.floor(ant.speed + otherAnt.speed) / 2 - 0.5 + Math.random();
+  const sensorArea = Math.floor(
+    Math.floor(ant.sensorArea + otherAnt.sensorArea) / 2 - 4 + Math.random() * 8
+  );
   const newAnt = {
     id: uuidv4(),
     x: Math.floor(ant.x + otherAnt.x) / 2,
     y: Math.floor(ant.y + otherAnt.y) / 2,
     direction: 0,
     brood: 0,
+    sensorArea:
+      sensorArea > DEFAULT_SENSOR_AREA ? sensorArea : DEFAULT_SENSOR_AREA,
     speed: speed > DEFAULT_SPEED ? speed : DEFAULT_SPEED,
     energy: DEFAULT_ENERGY,
     color: `#${rgb.hex(rgbNewAnt)}`,
@@ -369,7 +410,10 @@ function handleBirth(ant, otherAnt) {
     size: 1,
     age: 0,
     bredRest: 0,
-    generation: ant.generation + 1,
+    generation:
+      ant.generation > otherAnt.generation
+        ? ant.generation + 1
+        : otherAnt.generation + 1,
     food: Math.floor(ant.food + otherAnt.food) / 2 + FOOD_BOOST_NEWBORN,
     side: ant.side,
   };
@@ -418,7 +462,6 @@ const drawWalls = (ctx) => {
 
 const displayHelp = (ctx) => {
   ctx.font = "36px serif";
-  ctx.fontWeight = "bold";
   ctx.fillStyle = "#ffffff";
   const nbFoxes = ants.filter((ant) => ant.side === FOX_SIDE).length;
   const nbVipers = ants.filter((ant) => ant.side === VIPER_SIDE).length;
@@ -462,10 +505,10 @@ const displayHelp = (ctx) => {
     }
     if (enableDieOnFood) {
       ctx.fillStyle = "#FF0000";
-      ctx.fillText("Die on food (X) enabled", 30, 360);
+      ctx.fillText("Die on starvation (X) enabled", 30, 360);
     } else {
       ctx.fillStyle = "#808080";
-      ctx.fillText("Die on food (X) disabled", 30, 360);
+      ctx.fillText("Die on starvation (X) disabled", 30, 360);
     }
     if (enableSenescence) {
       ctx.fillStyle = "#FF0000";
@@ -473,6 +516,20 @@ const displayHelp = (ctx) => {
     } else {
       ctx.fillStyle = "#808080";
       ctx.fillText("Die on aging (C) disabled", 30, 400);
+    }
+    if (displaySensorArea) {
+      ctx.fillStyle = "#CCCC33";
+      ctx.fillText("Sensor (S) displayed", 30, 440);
+    } else {
+      ctx.fillStyle = "#808080";
+      ctx.fillText("Sensor (S) displayed", 30, 440);
+    }
+    if (enableChildKills) {
+      ctx.fillStyle = "#FF0000";
+      ctx.fillText("Allow to kill children (I) enabled", 30, 480);
+    } else {
+      ctx.fillStyle = "#808080";
+      ctx.fillText("Allow to kill children (I) disabled", 30, 480);
     }
   } else {
     ctx.fillStyle = "#808080";
