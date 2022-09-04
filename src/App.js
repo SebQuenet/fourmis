@@ -37,6 +37,7 @@ export const sides = {
   },
 };
 
+export let displayAnts = true;
 export let displayAntenna = false;
 export let displayWillBreed = false;
 export let displaySensorArea = false;
@@ -130,7 +131,7 @@ document.addEventListener(
       displayWillBreed = !displayWillBreed;
     }
     if (e.key === "a") {
-      displayAntenna = !displayAntenna;
+      displayAnts = !displayAnts;
     }
     if (e.key === "s") {
       displaySensorArea = !displaySensorArea;
@@ -408,6 +409,13 @@ const displayHelp = (ctx) => {
       ctx.fillStyle = "#808080";
       ctx.fillText("Gate (G) disabled", 30, 240);
     }
+    if (displayAnts) {
+      ctx.fillStyle = "#CCCCCC";
+      ctx.fillText("Ants (A) displayed", 30, 280);
+    } else {
+      ctx.fillStyle = "#808080";
+      ctx.fillText("Ants (A) hidden", 30, 280);
+    }
   } else {
     ctx.fillStyle = "#808080";
     ctx.fillText("Display debug (D) disabled", 30, 40);
@@ -424,7 +432,9 @@ function App() {
     handleBirthday(frameCount);
     handleDeaths();
     drawWalls(ctx);
-    drawAnts(ctx, ants);
+    if (displayAnts) {
+      drawAnts(ctx, ants);
+    }
     handleFatigue(ants);
     handleDirectionChange();
     handleMoveAnts();
