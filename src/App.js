@@ -43,6 +43,7 @@ export let displaySensorArea = false;
 export let displayEyes = true;
 export let displayWalls = true;
 export let enablePrey = false;
+export let displayDebug = false;
 
 export const listOfDeaths = [];
 export const listOfWalls = [
@@ -137,6 +138,9 @@ document.addEventListener(
     }
     if (e.key === "w") {
       displayWalls = !displayWalls;
+    }
+    if (e.key === "d") {
+      displayDebug = !displayDebug;
     }
   },
   false
@@ -366,12 +370,26 @@ function App() {
     const nbFoxes = ants.filter((ant) => ant.side === FOX_SIDE).length;
     const nbVipers = ants.filter((ant) => ant.side === VIPER_SIDE).length;
     const nbHens = ants.filter((ant) => ant.side === HEN_SIDE).length;
-    ctx.fillStyle = "#CC4444";
-    ctx.fillText(nbFoxes, 30, 40);
-    ctx.fillStyle = "#995500";
-    ctx.fillText(nbHens, 30, 80);
-    ctx.fillStyle = "#44CC44";
-    ctx.fillText(nbVipers, 30, 120);
+    if (displayDebug) {
+      ctx.fillStyle = "#00FF00";
+      ctx.fillText("Display debug (D) enabled", 30, 40);
+      ctx.fillStyle = "#CC4444";
+      ctx.fillText(nbFoxes, 30, 80);
+      ctx.fillStyle = "#995500";
+      ctx.fillText(nbHens, 30, 120);
+      ctx.fillStyle = "#44CC44";
+      ctx.fillText(nbVipers, 30, 160);
+      if (enablePrey) {
+        ctx.fillStyle = "#FF0000";
+        ctx.fillText("Prey mode (K) enabled", 30, 200);
+      } else {
+        ctx.fillStyle = "#808080";
+        ctx.fillText("Prey mode (K) disabled", 30, 200);
+      }
+    } else {
+      ctx.fillStyle = "#808080";
+      ctx.fillText("Display debug (D) disabled", 30, 40);
+    }
     handleBirthday(frameCount);
     handleDeaths();
     drawWalls(ctx);
