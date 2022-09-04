@@ -153,24 +153,24 @@ const handleBirthday = (frameCount) => {
       ant.bredRest = ant.bredRest - 1;
     }
     ant.age = ant.age + 1;
-    if (ant.age < 100) {
+    if (ant.age < 200) {
       ant.maturity = "newborn";
       ant.size = 2;
       ant.speed = 0;
-    } else if (ant.age < 200) {
+    } else if (ant.age < 400) {
       ant.maturity = "baby";
       ant.size = 4;
       ant.speed = DEFAULT_SPEED;
-    } else if (ant.age < 600) {
+    } else if (ant.age < 1200) {
       ant.maturity = "child";
       ant.size = 5;
       ant.speed = DEFAULT_SPEED + 1;
-    } else if (ant.age < 4000) {
+    } else if (ant.age < 8000) {
       ant.maturity = "adult";
       ant.size = 8;
       ant.canBreed = true;
       ant.speed = DEFAULT_SPEED + 2;
-    } else if (ant.age < 5000) {
+    } else if (ant.age < 10000) {
       ant.maturity = "elderly";
       ant.size = 7;
       ant.canBreed = false;
@@ -185,6 +185,9 @@ const handleBirthday = (frameCount) => {
 
 const handleDirectionChange = () => {
   ants.forEach((ant) => {
+    if (ant.isTired) {
+      return;
+    }
     ant.mode = NORMAL_MODE;
     const neighbors = ants.filter(
       (otherAnt) =>
@@ -248,6 +251,9 @@ const handleDirectionChange = () => {
 
 const handleMoveAnts = () => {
   ants.forEach((ant) => {
+    if (ant.isTired) {
+      return;
+    }
     const wantedX = ant.x + Math.cos(ant.direction) * ant.speed;
     const wantedY = ant.y + Math.sin(ant.direction) * ant.speed;
 
@@ -274,18 +280,11 @@ const handleMoveAnts = () => {
 
 const handleFatigue = () => {
   ants.forEach((ant) => {
-    if (ant.energy >= 0 && !ant.isTired) {
-      ant.energy = ant.energy - ant.speed;
-      if (ant.energy <= 0) {
-        ant.isTired = true;
-      }
-    }
-
-    if (ant.isTired && ant.energy <= 10) {
-      ant.energy = ant.energy + 1;
-      if (ant.energy >= 10) {
-        ant.isTired = false;
-      }
+    if (ant.brood > 0) {
+      ant.brood = ant.brood - 1;
+      ant.isTired = true;
+    } else {
+      ant.isTired = false;
     }
   });
 };
@@ -296,6 +295,9 @@ function handleBirth(ant, otherAnt) {
 
   const [r1, g1, b1] = hex.rgb(ant.color.substring(1));
   const [r2, g2, b2] = hex.rgb(otherAnt.color.substring(1));
+
+  ant.brood = 200;
+  otherAnt.brood = 200;
 
   const rgbNewAnt = [
     Math.floor(Math.sqrt((r1 * r1 + r2 * r2) / 2)),
@@ -308,6 +310,7 @@ function handleBirth(ant, otherAnt) {
     x: Math.floor(ant.x + otherAnt.x) / 2,
     y: Math.floor(ant.y + otherAnt.y) / 2,
     direction: 0,
+    brood: 0,
     speed: Math.floor(ant.speed + otherAnt.speed) / 2,
     energy: DEFAULT_ENERGY,
     color: `#${rgb.hex(rgbNewAnt)}`,
@@ -358,42 +361,47 @@ const drawWalls = (ctx) => {
   }
 };
 
+const displayHelp = (ctx) => {
+  ctx.font = "36px serif";
+  ctx.fontWeight = "bold";
+  ctx.fillStyle = "#ffffff";
+  const nbFoxes = ants.filter((ant) => ant.side === FOX_SIDE).length;
+  const nbVipers = ants.filter((ant) => ant.side === VIPER_SIDE).length;
+  const nbHens = ants.filter((ant) => ant.side === HEN_SIDE).length;
+  if (displayDebug) {
+    ctx.fillStyle = "#00FF00";
+    ctx.fillText("Display debug (D) enabled", 30, 40);
+    ctx.fillStyle = "#CC4444";
+    ctx.fillText(`${nbFoxes} foxes, (F) to add`, 30, 80);
+    ctx.fillStyle = "#995500";
+    ctx.fillText(`${nbHens} hens, (H) to add`, 30, 120);
+    ctx.fillStyle = "#44CC44";
+    ctx.fillText(`${nbVipers} vipers, (V) to add`, 30, 160);
+    if (enablePrey) {
+      ctx.fillStyle = "#FF0000";
+      ctx.fillText("Prey mode (K) enabled", 30, 200);
+    } else {
+      ctx.fillStyle = "#808080";
+      ctx.fillText("Prey mode (K) disabled", 30, 200);
+    }
+  } else {
+    ctx.fillStyle = "#808080";
+    ctx.fillText("Display debug (D) disabled", 30, 40);
+  }
+};
+
 function App() {
   const draw = (ctx, frameCount) => {
     ctx.beginPath();
     ctx.fillStyle = "#202020";
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-    ctx.font = "36px serif";
-    ctx.fontWeight = "bold";
-    ctx.fillStyle = "#ffffff";
-    const nbFoxes = ants.filter((ant) => ant.side === FOX_SIDE).length;
-    const nbVipers = ants.filter((ant) => ant.side === VIPER_SIDE).length;
-    const nbHens = ants.filter((ant) => ant.side === HEN_SIDE).length;
-    if (displayDebug) {
-      ctx.fillStyle = "#00FF00";
-      ctx.fillText("Display debug (D) enabled", 30, 40);
-      ctx.fillStyle = "#CC4444";
-      ctx.fillText(`${nbFoxes} foxes, (F) to add`, 30, 80);
-      ctx.fillStyle = "#995500";
-      ctx.fillText(`${nbHens} hens, (H) to add`, 30, 120);
-      ctx.fillStyle = "#44CC44";
-      ctx.fillText(`${nbVipers} vipers, (V) to add`, 30, 160);
-      if (enablePrey) {
-        ctx.fillStyle = "#FF0000";
-        ctx.fillText("Prey mode (K) enabled", 30, 200);
-      } else {
-        ctx.fillStyle = "#808080";
-        ctx.fillText("Prey mode (K) disabled", 30, 200);
-      }
-    } else {
-      ctx.fillStyle = "#808080";
-      ctx.fillText("Display debug (D) disabled", 30, 40);
-    }
+    displayHelp(ctx);
     handleBirthday(frameCount);
     handleDeaths();
     drawWalls(ctx);
     drawAnts(ctx, ants);
+    handleFatigue(ants);
     handleDirectionChange();
     handleMoveAnts();
     handleContacts();
