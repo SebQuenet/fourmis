@@ -39,6 +39,13 @@ export let displayEyes = true;
 export let enablePrey = false;
 
 export const listOfDeaths = [];
+export const listOfWalls = [
+  { x: 1600, y: 1000, width: 800, height: 10 },
+  { x: 1000, y: 600, width: 10, height: 800 },
+  { x: 3000, y: 600, width: 10, height: 800 },
+  { x: 1600, y: 400, width: 800, height: 10 },
+  { x: 1600, y: 1600, width: 800, height: 10 },
+];
 
 const areAntsSameGeneration = (ant, otherAnt) =>
   ant.generation === otherAnt.generation;
@@ -217,9 +224,26 @@ const handleDirectionChange = () => {
 
 const handleMoveAnts = () => {
   ants.forEach((ant) => {
-    if (!ant.isTired) {
-      ant.x = ant.x + Math.cos(ant.direction) * ant.speed;
-      ant.y = ant.y + Math.sin(ant.direction) * ant.speed;
+    const wantedX = ant.x + Math.cos(ant.direction) * ant.speed;
+    const wantedY = ant.y + Math.sin(ant.direction) * ant.speed;
+
+    let isAntInsideWall = false;
+    listOfWalls.forEach((wall) => {
+      if (
+        wantedX >= wall.x &&
+        wantedX <= wall.x + wall.width &&
+        wantedY >= wall.y &&
+        wantedY <= wall.y + wall.height
+      ) {
+        // ant.direction = Math.PI + Math.atan2(wall.y - ant.y, wall.x - ant.x);
+        ant.direction = Math.PI + ant.direction;
+        isAntInsideWall = true;
+      }
+    });
+
+    if (!isAntInsideWall) {
+      ant.x = wantedX;
+      ant.y = wantedY;
     }
   });
 };
@@ -300,6 +324,12 @@ const handleContacts = () => {
 const handleDeaths = () => {
   ants = ants.filter((ant) => !ant.isDead);
 };
+const drawWalls = (ctx) => {
+  listOfWalls.forEach((wall) => {
+    ctx.fillStyle = "#888888";
+    ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
+  });
+};
 
 function App() {
   const draw = (ctx, frameCount) => {
@@ -311,6 +341,7 @@ function App() {
     ctx.fillText(frameCount, 10, 10);
     handleBirthday();
     handleDeaths();
+    drawWalls(ctx);
     drawAnts(ctx, ants);
     handleDirectionChange();
     handleMoveAnts();
