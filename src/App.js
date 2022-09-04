@@ -99,13 +99,13 @@ const antFactory = ({ side }) => ({
 
 export let ants = [];
 
-for (let i = 0; i < 40; i++) {
+for (let i = 0; i < 20; i++) {
   ants.push(antFactory({ side: VIPER_SIDE }));
 }
-for (let i = 0; i < 40; i++) {
+for (let i = 0; i < 20; i++) {
   ants.push(antFactory({ side: HEN_SIDE }));
 }
-for (let i = 0; i < 40; i++) {
+for (let i = 0; i < 20; i++) {
   ants.push(antFactory({ side: FOX_SIDE }));
 }
 
@@ -374,11 +374,11 @@ function App() {
       ctx.fillStyle = "#00FF00";
       ctx.fillText("Display debug (D) enabled", 30, 40);
       ctx.fillStyle = "#CC4444";
-      ctx.fillText(`${nbFoxes} foxes`, 30, 80);
+      ctx.fillText(`${nbFoxes} foxes, (F) to add`, 30, 80);
       ctx.fillStyle = "#995500";
-      ctx.fillText(`${nbHens} hens`, 30, 120);
+      ctx.fillText(`${nbHens} hens, (H) to add`, 30, 120);
       ctx.fillStyle = "#44CC44";
-      ctx.fillText(`${nbVipers} vipers`, 30, 160);
+      ctx.fillText(`${nbVipers} vipers, (V) to add`, 30, 160);
       if (enablePrey) {
         ctx.fillStyle = "#FF0000";
         ctx.fillText("Prey mode (K) enabled", 30, 200);
