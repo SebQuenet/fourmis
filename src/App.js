@@ -155,15 +155,15 @@ const handleBirthday = (frameCount) => {
     ant.age = ant.age + 1;
     if (ant.age < 100) {
       ant.maturity = "newborn";
-      ant.size = 1;
+      ant.size = 2;
       ant.speed = 0;
     } else if (ant.age < 200) {
       ant.maturity = "baby";
-      ant.size = 2;
+      ant.size = 4;
       ant.speed = DEFAULT_SPEED;
     } else if (ant.age < 600) {
       ant.maturity = "child";
-      ant.size = 3;
+      ant.size = 5;
       ant.speed = DEFAULT_SPEED + 1;
     } else if (ant.age < 4000) {
       ant.maturity = "adult";
@@ -172,7 +172,7 @@ const handleBirthday = (frameCount) => {
       ant.speed = DEFAULT_SPEED + 2;
     } else if (ant.age < 5000) {
       ant.maturity = "elderly";
-      ant.size = 5;
+      ant.size = 7;
       ant.canBreed = false;
       ant.speed = 1;
       ant.energy = 5;

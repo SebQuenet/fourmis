@@ -155,7 +155,13 @@ export const drawAnts = (ctx, ants) => {
     if (displayAntenna) {
       drawAntenna(ctx, ant);
     }
-    if (displayEyes && ant.maturity === "adult") {
+    if (
+      displayEyes &&
+      (ant.maturity === "adult" ||
+        ant.maturity === "elderly" ||
+        ant.maturity === "child" ||
+        ant.maturity === "baby")
+    ) {
       drawEyes(ctx, ant);
     }
 
