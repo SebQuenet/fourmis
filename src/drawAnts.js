@@ -7,6 +7,10 @@ import {
   displaySensorArea,
   displayEyes,
   SENSOR_AREA,
+  NORMAL_MODE,
+  FLEEING_MODE,
+  HUNTING_MODE,
+  MATING_MODE,
 } from "./App";
 
 const drawSensorArea = (ctx, ant) => {
@@ -22,39 +26,60 @@ const drawSensorArea = (ctx, ant) => {
 const drawEyes = (ctx, ant) => {
   const [h, s, l] = hex.hsl(sides[ant.side].color.substring(1));
 
+  const eyeSize = 4;
   ctx.beginPath();
   //  ctx.fillStyle = `#${hsl.hex(h, s, l + 30)}`;
   ctx.fillStyle = "#ffffff";
   ctx.arc(
     ant.x + Math.cos(ant.direction + Math.PI / 6) * ant.size,
     ant.y + Math.sin(ant.direction + Math.PI / 6) * ant.size,
-    4,
+    eyeSize,
     0,
     2 * Math.PI
   );
   ctx.arc(
     ant.x + Math.cos(ant.direction - Math.PI / 6) * ant.size,
     ant.y + Math.sin(ant.direction - Math.PI / 6) * ant.size,
-    4,
+    eyeSize,
     0,
     2 * Math.PI
   );
   ctx.fill();
 
   ctx.beginPath();
+  const pupilSize = ant.mode === NORMAL_MODE ? 2 : 3;
+  let pupilColor;
+  switch (ant.mode) {
+    case NORMAL_MODE:
+      pupilColor = "#000000";
+      break;
+    case FLEEING_MODE:
+      pupilColor = "#008000";
+      break;
+    case HUNTING_MODE:
+      pupilColor = "#ff0000";
+      debugger;
+      break;
+    case MATING_MODE:
+      pupilColor = "#ff00ff";
+      break;
+    default:
+      pupilColor = "#000000";
+  }
+
   /// ctx.fillStyle = `#${hsl.hex(h, s, l - 30)}`;
-  ctx.fillStyle = "#000000";
+  ctx.fillStyle = pupilColor;
   ctx.arc(
     ant.x + Math.cos(ant.direction + Math.PI / 6) * ant.size,
     ant.y + Math.sin(ant.direction + Math.PI / 6) * ant.size,
-    3,
+    pupilSize,
     0,
     2 * Math.PI
   );
   ctx.arc(
     ant.x + Math.cos(ant.direction - Math.PI / 6) * ant.size,
     ant.y + Math.sin(ant.direction - Math.PI / 6) * ant.size,
-    3,
+    pupilSize,
     0,
     2 * Math.PI
   );
@@ -95,8 +120,21 @@ export const drawAnts = (ctx, ants) => {
   });
   ants.forEach((ant) => {
     ctx.beginPath();
-    ctx.fillStyle = sides[ant.side].color;
-    ctx.arc(ant.x, ant.y, ant.size, 0, 2 * Math.PI);
+    if (ant.maturity === "elderly") {
+      const [h, s, l] = hex.hsl(sides[ant.side].color.substring(1));
+      ctx.fillStyle = `#${hsl.hex(h, s / 2, l - 10)}`;
+    } else {
+      ctx.fillStyle = sides[ant.side].color;
+    }
+    ctx.ellipse(
+      ant.x,
+      ant.y,
+      ant.size * 2,
+      ant.size + ant.size * Math.abs(ant.oscillator),
+      ant.direction,
+      0,
+      2 * Math.PI
+    );
     ctx.fill();
     if (displayWillBreed && ant.bredRest > 0) {
       ctx.strokeStyle = "#ffffff";

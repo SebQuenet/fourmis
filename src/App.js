@@ -10,6 +10,11 @@ const DEFAULT_ENERGY = 2;
 
 export const SENSOR_AREA = 80;
 
+export const NORMAL_MODE = "NORMAL_MODE";
+export const FLEEING_MODE = "FLEEING_MODE";
+export const HUNTING_MODE = "HUNTING_MODE";
+export const MATING_MODE = "MATING_MODE";
+
 const HEN_SIDE = "HEN_SIDE";
 const VIPER_SIDE = "VIPER_SIDE";
 const FOX_SIDE = "FOX_SIDE";
@@ -36,6 +41,7 @@ export let displayAntenna = false;
 export let displayWillBreed = false;
 export let displaySensorArea = false;
 export let displayEyes = true;
+export let displayWalls = true;
 export let enablePrey = false;
 
 export const listOfDeaths = [];
@@ -92,8 +98,14 @@ const antFactory = ({ side }) => ({
 
 export let ants = [];
 
-for (var i = 0; i < 120; i++) {
-  ants.push(antFactory({}));
+for (let i = 0; i < 40; i++) {
+  ants.push(antFactory({ side: VIPER_SIDE }));
+}
+for (let i = 0; i < 40; i++) {
+  ants.push(antFactory({ side: HEN_SIDE }));
+}
+for (let i = 0; i < 40; i++) {
+  ants.push(antFactory({ side: FOX_SIDE }));
 }
 
 document.addEventListener(
@@ -123,12 +135,16 @@ document.addEventListener(
     if (e.key === "k") {
       enablePrey = !enablePrey;
     }
+    if (e.key === "w") {
+      displayWalls = !displayWalls;
+    }
   },
   false
 );
 
-const handleBirthday = () => {
+const handleBirthday = (frameCount) => {
   ants.forEach((ant) => {
+    ant.oscillator = Math.cos(frameCount / 10);
     if (ant.bredRest > 0) {
       ant.bredRest = ant.bredRest - 1;
     }
@@ -165,6 +181,7 @@ const handleBirthday = () => {
 
 const handleDirectionChange = () => {
   ants.forEach((ant) => {
+    ant.mode = NORMAL_MODE;
     const neighbors = ants.filter(
       (otherAnt) =>
         Math.abs(otherAnt.x - ant.x) < SENSOR_AREA &&
@@ -181,6 +198,7 @@ const handleDirectionChange = () => {
     if (threats.length > 0) {
       const threat = threats[0];
       ant.direction = Math.PI + Math.atan2(threat.y - ant.y, threat.x - ant.x);
+      ant.mode = FLEEING_MODE;
     }
 
     const mates = adultNeighbors.filter(
@@ -192,6 +210,7 @@ const handleDirectionChange = () => {
     if (mates.length > 0) {
       const mate = mates[0];
       ant.direction = Math.atan2(mate.y - ant.y, mate.x - ant.x);
+      ant.mode = MATING_MODE;
     }
 
     if (enablePrey) {
@@ -201,6 +220,7 @@ const handleDirectionChange = () => {
       if (preys.length > 0) {
         const prey = preys[0];
         ant.direction = Math.atan2(prey.y - ant.y, prey.x - ant.x);
+        ant.mode = HUNTING_MODE;
       }
     }
 
@@ -289,6 +309,7 @@ function handleBirth(ant, otherAnt) {
     color: `#${rgb.hex(rgbNewAnt)}`,
     canBreed: false,
     hasBred: false,
+    mode: NORMAL_MODE,
     size: 1,
     age: 0,
     bredRest: 0,
@@ -325,10 +346,12 @@ const handleDeaths = () => {
   ants = ants.filter((ant) => !ant.isDead);
 };
 const drawWalls = (ctx) => {
-  listOfWalls.forEach((wall) => {
-    ctx.fillStyle = "#888888";
-    ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
-  });
+  if (displayWalls) {
+    listOfWalls.forEach((wall) => {
+      ctx.fillStyle = "#888888";
+      ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
+    });
+  }
 };
 
 function App() {
@@ -337,9 +360,19 @@ function App() {
     ctx.fillStyle = "#202020";
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
+    ctx.font = "36px serif";
+    ctx.fontWeight = "bold";
     ctx.fillStyle = "#ffffff";
-    ctx.fillText(frameCount, 10, 10);
-    handleBirthday();
+    const nbFoxes = ants.filter((ant) => ant.side === FOX_SIDE).length;
+    const nbVipers = ants.filter((ant) => ant.side === VIPER_SIDE).length;
+    const nbHens = ants.filter((ant) => ant.side === HEN_SIDE).length;
+    ctx.fillStyle = "#CC4444";
+    ctx.fillText(nbFoxes, 30, 40);
+    ctx.fillStyle = "#995500";
+    ctx.fillText(nbHens, 30, 80);
+    ctx.fillStyle = "#44CC44";
+    ctx.fillText(nbVipers, 30, 120);
+    handleBirthday(frameCount);
     handleDeaths();
     drawWalls(ctx);
     drawAnts(ctx, ants);
