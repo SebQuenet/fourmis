@@ -60,6 +60,10 @@ export let enableChildKills = false;
 const WALL_TEMPLATES = [
   [],
   [
+    { x: 1900, y: 0, width: 200, height: 950 },
+    { x: 1900, y: 1050, width: 200, height: 950 },
+  ],
+  [
     { x: 2000, y: 0, width: 10, height: 2000, isGate: true },
     { x: 0, y: 1000, width: 4000, height: 10, isGate: true },
   ],
