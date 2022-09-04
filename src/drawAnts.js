@@ -1,6 +1,7 @@
 import { hex, hsl } from "color-convert";
 import {
   sides,
+  listOfDeaths,
   displayWillBreed,
   displayAntenna,
   displaySensorArea,
@@ -87,6 +88,11 @@ const drawAntenna = (ctx, ant) => {
 };
 
 export const drawAnts = (ctx, ants) => {
+  ctx.strokeStyle = "#331111";
+  listOfDeaths.forEach((point) => {
+    ctx.beginPath();
+    ctx.fillRect(point.x, point.y, 1, 1);
+  });
   ants.forEach((ant) => {
     ctx.beginPath();
     ctx.fillStyle = sides[ant.side].color;

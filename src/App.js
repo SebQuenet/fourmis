@@ -36,6 +36,9 @@ export let displayAntenna = false;
 export let displayWillBreed = false;
 export let displaySensorArea = false;
 export let displayEyes = true;
+export let enablePrey = false;
+
+export const listOfDeaths = [];
 
 const areAntsSameGeneration = (ant, otherAnt) =>
   ant.generation === otherAnt.generation;
@@ -110,6 +113,9 @@ document.addEventListener(
     if (e.key === "e") {
       displayEyes = !displayEyes;
     }
+    if (e.key === "k") {
+      enablePrey = !enablePrey;
+    }
   },
   false
 );
@@ -181,15 +187,15 @@ const handleDirectionChange = () => {
       ant.direction = Math.atan2(mate.y - ant.y, mate.x - ant.x);
     }
 
-    /*
-    const preys = neighbors.filter((otherAnt) =>
-      canAntKillOtherAnt(ant, otherAnt)
-    );
-    if (preys.length > 0) {
-      const prey = preys[0];
-      ant.direction = Math.atan2(prey.y - ant.y, prey.x - ant.x);
+    if (enablePrey) {
+      const preys = neighbors.filter((otherAnt) =>
+        canAntKillOtherAnt(ant, otherAnt)
+      );
+      if (preys.length > 0) {
+        const prey = preys[0];
+        ant.direction = Math.atan2(prey.y - ant.y, prey.x - ant.x);
+      }
     }
-    */
 
     if (ant.x > 4000) {
       ant.direction = Math.PI;
@@ -282,6 +288,7 @@ const handleContacts = () => {
           if (!areAntsSameSide(ant, otherAnt)) {
             if (canAntKillOtherAnt(ant, otherAnt) && isAntAdult(ant)) {
               otherAnt.isDead = true;
+              listOfDeaths.push({ x: otherAnt.x, y: otherAnt.y });
             }
           }
         }
