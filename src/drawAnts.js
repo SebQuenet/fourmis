@@ -221,6 +221,7 @@ export const drawAnts = (ctx, ants) => {
       ctx.beginPath();
       ctx.strokeStyle = "#ff8888";
       ctx.fillStyle = "#ffffff";
+      ctx.lineWidth = 3;
       ctx.arc(ant.x, ant.y, maturities[ant.maturity].size * 3, 0, 2 * Math.PI);
       ctx.stroke();
     }

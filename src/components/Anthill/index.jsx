@@ -6,7 +6,7 @@ const CANVAS_HEIGHT = 2000;
 
 const AntHill = (props) => {
   const canvasRef = useRef(null);
-  const { draw, handleClick } = props;
+  const { draw, handleClick, handleMouseMove } = props;
   useEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
@@ -14,8 +14,14 @@ const AntHill = (props) => {
     let frameCount = 0;
     let animationFrameId;
 
+    canvas.addEventListener('mousemove', (e) => {
+      const canvasWidth = canvas.getBoundingClientRect().width;
+      const canvasHeight = canvas.getBoundingClientRect().height;
+      const canvasX = e.clientX*CANVAS_WIDTH/canvasWidth;
+      const canvasY = e.clientY*CANVAS_HEIGHT/canvasHeight;
+      handleMouseMove({canvasX, canvasY});
+    }, false);
     canvas.addEventListener('click', (e) => {
-
       const canvasWidth = canvas.getBoundingClientRect().width;
       const canvasHeight = canvas.getBoundingClientRect().height;
       const canvasX = e.clientX*CANVAS_WIDTH/canvasWidth;
@@ -33,8 +39,8 @@ const AntHill = (props) => {
     return () => {
       window.cancelAnimationFrame(animationFrameId)
     }
-
   }, [draw]);
+
   console.log(window.innerWidth / 2);
   console.log(window.innerHeight/ 2);
   return <canvas width={CANVAS_WIDTH} height={CANVAS_HEIGHT} className={styles.canvasSupport} ref={canvasRef}{...props}></canvas>

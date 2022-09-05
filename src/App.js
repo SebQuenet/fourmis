@@ -33,6 +33,8 @@ const NUMBER_PER_SIDE = 30;
 const FOOD_LOW = 1000;
 const FOOD_BOOST_NEWBORN = 600;
 
+let selectedAnt = null;
+
 export const sides = {
   [HEN_SIDE]: {
     side: HEN_SIDE,
@@ -112,6 +114,13 @@ const WALL_TEMPLATES = [
   ],
 ];
 
+let cursorX = 0;
+let cursorY = 0;
+
+const handleMouseMove = ({ canvasX, canvasY }) => {
+  cursorX = canvasX;
+  cursorY = canvasY;
+};
 export const listOfWalls =
   WALL_TEMPLATES[Math.floor(Math.random() * WALL_TEMPLATES.length)];
 
@@ -156,11 +165,11 @@ const randomSide = () => {
   return sidesArray[randomIndex];
 };
 
-const antFactory = ({ side }) => ({
+const antFactory = ({ side, x, y }) => ({
   id: uuidv4(),
   name: generateStupidName(),
-  x: Math.floor(Math.random() * 3600) + 200,
-  y: Math.floor(Math.random() * 1600) + 200,
+  x: x ? x : Math.floor(Math.random() * 3600) + 200,
+  y: y ? y : Math.floor(Math.random() * 1600) + 200,
   direction: Math.PI / 2,
   food: DEFAULT_FOOD,
   speed: DEFAULT_SPEED,
@@ -199,11 +208,23 @@ document.addEventListener(
     if (e.key === "v") {
       ants = [...ants, antFactory({ side: VIPER_SIDE })];
     }
+    if (e.key === "V") {
+      ants = [
+        ...ants,
+        antFactory({ side: VIPER_SIDE, x: cursorX, y: cursorY }),
+      ];
+    }
     if (e.key === "f") {
       ants = [...ants, antFactory({ side: FOX_SIDE })];
     }
+    if (e.key === "F") {
+      ants = [...ants, antFactory({ side: FOX_SIDE, x: cursorX, y: cursorY })];
+    }
     if (e.key === "h") {
       ants = [...ants, antFactory({ side: HEN_SIDE })];
+    }
+    if (e.key === "H") {
+      ants = [...ants, antFactory({ side: HEN_SIDE, x: cursorX, y: cursorY })];
     }
     if (e.key === "B") {
       enableBreed = !enableBreed;
@@ -246,6 +267,9 @@ document.addEventListener(
     }
     if (e.key === " ") {
       isPaused = !isPaused;
+    }
+    if (e.key === "D") {
+      debugger;
     }
   },
   false
@@ -527,9 +551,12 @@ const handleFood = () => {
 };
 
 const handleClick = ({ canvasX, canvasY }) => {
+  console.log(selectedAnt);
   ants.forEach((ant) => ant.isSelected === false);
+  console.log(ants.find((ant) => ant.isSelected));
   ants.forEach((ant) => {
     if (!ant.maturity) {
+      console.log("No maturity for ant", ant);
       return;
     }
     if (
@@ -540,8 +567,25 @@ const handleClick = ({ canvasX, canvasY }) => {
     ) {
       console.log(ant);
       ant.isSelected = true;
+      selectedAnt = ant;
+    } else {
+      selectedAnt = null;
     }
   });
+};
+
+const drawSelectedAnt = (ctx) => {
+  if (selectedAnt === null) {
+    return;
+  }
+
+  ctx.beginPath();
+  ctx.strokeStyle = "#FFFF00";
+  ctx.lineWidth = 2;
+  ctx.fillStyle = "#000000";
+  ctx.rect(3000, 0, 1000, 1000);
+  ctx.fill();
+  ctx.stroke();
 };
 
 function App() {
@@ -563,11 +607,16 @@ function App() {
       handleDirectionChange();
       handleMoveAnts();
       handleContacts();
+      drawSelectedAnt(ctx);
     }
   };
   return (
     <div className="App">
-      <AntHill draw={draw} handleClick={handleClick} />
+      <AntHill
+        draw={draw}
+        handleClick={handleClick}
+        handleMouseMove={handleMouseMove}
+      />
     </div>
   );
 }
