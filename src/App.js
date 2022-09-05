@@ -1,13 +1,20 @@
 import { v4 as uuidv4 } from "uuid";
 import { hex, rgb } from "color-convert";
 
+import generateStupidName from "sillyname";
+
 import "./App.css";
 import AntHill from "./components/Anthill";
 import { drawAnts } from "./drawAnts";
+import { displayHelp } from "./displayHelp";
 
 const DEFAULT_SPEED = 1;
 const DEFAULT_ENERGY = 2;
 const DEFAULT_FOOD = 4000;
+const DEFAULT_HIT_POINTS = 100;
+const DEFAULT_STRENGTH = 40;
+const DEFAULT_REACH = 30;
+const DEFAULT_DR = 5;
 
 export const DEFAULT_SENSOR_AREA = 80;
 
@@ -16,9 +23,9 @@ export const FLEEING_MODE = "FLEEING_MODE";
 export const HUNTING_MODE = "HUNTING_MODE";
 export const MATING_MODE = "MATING_MODE";
 
-const HEN_SIDE = "HEN_SIDE";
-const VIPER_SIDE = "VIPER_SIDE";
-const FOX_SIDE = "FOX_SIDE";
+export const HEN_SIDE = "HEN_SIDE";
+export const VIPER_SIDE = "VIPER_SIDE";
+export const FOX_SIDE = "FOX_SIDE";
 
 const NUMBER_PER_SIDE = 30;
 
@@ -43,6 +50,24 @@ export const sides = {
   },
 };
 
+export const maturities = {
+  newborn: {
+    size: 2,
+  },
+  baby: {
+    size: 4,
+  },
+  child: {
+    size: 5,
+  },
+  adult: {
+    size: 8,
+  },
+  elderly: {
+    size: 7,
+  },
+};
+
 export let displayAnts = true;
 export let displayAntenna = false;
 export let displayWillBreed = false;
@@ -56,6 +81,7 @@ export let enableDieOnFood = true;
 export let displayDebug = false;
 export let displayFood = false;
 export let enableChildKills = false;
+export let isPaused = false;
 
 const WALL_TEMPLATES = [
   [],
@@ -88,18 +114,6 @@ export const listOfWalls =
   WALL_TEMPLATES[Math.floor(Math.random() * WALL_TEMPLATES.length)];
 
 export const listOfDeaths = [];
-/*export const listOfWalls = [
-  { x: 2000, y: 0, width: 10, height: 2000, isGate: true },
-  { x: 1000, y: 1000, width: 2000, height: 10, isGate: true },
-  { x: 1600, y: 1000, width: 800, height: 10 },
-  { x: 1000, y: 600, width: 10, height: 800 },
-  { x: 3000, y: 600, width: 10, height: 800 },
-  { x: 1600, y: 400, width: 800, height: 10 },
-  { x: 1600, y: 1600, width: 800, height: 10 },
-  { x: 0, y: 600, width: 1000, height: 10 },
-  { x: 3000, y: 1400, width: 1000, height: 10 },
-];
-*/
 
 const areAntsSameGeneration = (ant, otherAnt) =>
   ant.generation === otherAnt.generation;
@@ -124,6 +138,11 @@ const canAntKillOtherAnt = (ant, otherAnt) => {
   ) {
     return false;
   }
+  if (
+    Math.sqrt((ant.x - otherAnt.x) ** 2 + (ant.y - otherAnt.y) ** 2) > ant.reach
+  ) {
+    return false;
+  }
   return ant.maturity === "adult" && sides[ant.side].canKill[otherAnt.side];
 };
 const isAntAdult = (ant) => ant.maturity === "adult";
@@ -136,18 +155,23 @@ const randomSide = () => {
 
 const antFactory = ({ side }) => ({
   id: uuidv4(),
+  name: generateStupidName(),
   x: Math.floor(Math.random() * 3600) + 200,
   y: Math.floor(Math.random() * 1600) + 200,
   direction: Math.PI / 2,
   food: DEFAULT_FOOD,
   speed: DEFAULT_SPEED,
   energy: DEFAULT_ENERGY,
+  hitPoints: DEFAULT_HIT_POINTS,
+  strength: DEFAULT_STRENGTH,
+  reach: DEFAULT_REACH,
+  damageReduction: DEFAULT_DR,
   sensorArea: DEFAULT_SENSOR_AREA,
   isTired: false,
   color: "#44CCCC",
   canBreed: false,
   bredRest: 0,
-  size: 1,
+  size: maturities["baby"].size,
   age: 1,
   maturity: "child",
   generation: 1,
@@ -157,26 +181,26 @@ const antFactory = ({ side }) => ({
 export let ants = [];
 
 for (let i = 0; i < NUMBER_PER_SIDE; i++) {
-  ants.push(antFactory({ side: VIPER_SIDE }));
+  ants = [...ants, antFactory({ side: VIPER_SIDE })];
 }
 for (let i = 0; i < NUMBER_PER_SIDE; i++) {
-  ants.push(antFactory({ side: HEN_SIDE }));
+  ants = [...ants, antFactory({ side: HEN_SIDE })];
 }
 for (let i = 0; i < NUMBER_PER_SIDE; i++) {
-  ants.push(antFactory({ side: FOX_SIDE }));
+  ants = [...ants, antFactory({ side: FOX_SIDE })];
 }
 
 document.addEventListener(
   "keydown",
   (e) => {
     if (e.key === "v") {
-      ants.push(antFactory({ side: VIPER_SIDE }));
+      ants = [...ants, antFactory({ side: VIPER_SIDE })];
     }
     if (e.key === "f") {
-      ants.push(antFactory({ side: FOX_SIDE }));
+      ants = [...ants, antFactory({ side: FOX_SIDE })];
     }
     if (e.key === "h") {
-      ants.push(antFactory({ side: HEN_SIDE }));
+      ants = [...ants, antFactory({ side: FOX_SIDE })];
     }
     if (e.key === "b") {
       displayWillBreed = !displayWillBreed;
@@ -214,6 +238,9 @@ document.addEventListener(
     if (e.key === "i") {
       enableChildKills = !enableChildKills;
     }
+    if (e.key === " ") {
+      isPaused = !isPaused;
+    }
   },
   false
 );
@@ -227,20 +254,15 @@ const handleBirthday = (frameCount) => {
     ant.age = ant.age + 1;
     if (ant.age < 200) {
       ant.maturity = "newborn";
-      ant.size = 2;
     } else if (ant.age < 400) {
       ant.maturity = "baby";
-      ant.size = 4;
     } else if (ant.age < 1200) {
       ant.maturity = "child";
-      ant.size = 5;
     } else if (ant.age < 8000) {
       ant.maturity = "adult";
-      ant.size = 8;
       ant.canBreed = true;
     } else if (ant.age < 10000 && enableSenescence) {
       ant.maturity = "elderly";
-      ant.size = 7;
       ant.canBreed = false;
       ant.energy = 5;
     } else if (enableSenescence) {
@@ -403,6 +425,7 @@ function handleBirth(ant, otherAnt) {
   );
   const newAnt = {
     id: uuidv4(),
+    name: generateStupidName(),
     x: Math.floor(ant.x + otherAnt.x) / 2,
     y: Math.floor(ant.y + otherAnt.y) / 2,
     direction: 0,
@@ -411,11 +434,21 @@ function handleBirth(ant, otherAnt) {
       sensorArea > DEFAULT_SENSOR_AREA ? sensorArea : DEFAULT_SENSOR_AREA,
     speed: speed > DEFAULT_SPEED ? speed : DEFAULT_SPEED,
     energy: DEFAULT_ENERGY,
+    hitPoints: Math.floor(
+      (ant.hitPoints + otherAnt.hitPoints) / 2 + Math.random() * 10 - 5
+    ),
+    strength: Math.floor(
+      (ant.strength + otherAnt.strength) / 2 + Math.random() * 4 - 2
+    ),
+    reach: Math.floor((ant.reach + otherAnt.reach) / 2 + Math.random() * 4 - 2),
+    damageReduction: Math.floor(
+      (ant.damageReduction + otherAnt.damageReduction) / 2
+    ),
     color: `#${rgb.hex(rgbNewAnt)}`,
     canBreed: false,
     hasBred: false,
     mode: NORMAL_MODE,
-    size: 1,
+    size: maturities["baby"].size,
     age: 0,
     bredRest: 0,
     generation:
@@ -425,7 +458,7 @@ function handleBirth(ant, otherAnt) {
     food: Math.floor(ant.food + otherAnt.food) / 2 + FOOD_BOOST_NEWBORN,
     side: ant.side,
   };
-  ants.push(newAnt);
+  ants = [...ants, newAnt];
 }
 
 const handleContacts = () => {
@@ -441,9 +474,12 @@ const handleContacts = () => {
         } else {
           if (!areAntsSameSide(ant, otherAnt)) {
             if (canAntKillOtherAnt(ant, otherAnt) && isAntAdult(ant)) {
-              otherAnt.isDead = true;
+              otherAnt.hitPoints = otherAnt.hitPoints - ant.strength;
+              if (otherAnt.hitPoints <= 0) {
+                otherAnt.isDead = true;
+              }
               listOfDeaths.push({ x: otherAnt.x, y: otherAnt.y });
-              ant.food = ant.food + 1500;
+              ant.food = ant.food + otherAnt.food / 2;
             }
           }
         }
@@ -468,88 +504,10 @@ const drawWalls = (ctx) => {
   }
 };
 
-const displayHelp = (ctx) => {
-  ctx.font = "36px serif";
-  ctx.fillStyle = "#ffffff";
-  const nbFoxes = ants.filter((ant) => ant.side === FOX_SIDE).length;
-  const nbVipers = ants.filter((ant) => ant.side === VIPER_SIDE).length;
-  const nbHens = ants.filter((ant) => ant.side === HEN_SIDE).length;
-  if (displayDebug) {
-    ctx.fillStyle = "#00FF00";
-    ctx.fillText("Display debug (D) enabled", 30, 40);
-    ctx.fillStyle = "#CC4444";
-    ctx.fillText(`${nbFoxes} foxes, (F) to add`, 30, 80);
-    ctx.fillStyle = "#995500";
-    ctx.fillText(`${nbHens} hens, (H) to add`, 30, 120);
-    ctx.fillStyle = "#44CC44";
-    ctx.fillText(`${nbVipers} vipers, (V) to add`, 30, 160);
-    if (enablePrey) {
-      ctx.fillStyle = "#FF0000";
-      ctx.fillText("Prey mode (K) enabled", 30, 200);
-    } else {
-      ctx.fillStyle = "#808080";
-      ctx.fillText("Prey mode (K) disabled", 30, 200);
-    }
-    if (enableGate) {
-      ctx.fillStyle = "#CCCCCC";
-      ctx.fillText("Gate (G) enabled", 30, 240);
-    } else {
-      ctx.fillStyle = "#808080";
-      ctx.fillText("Gate (G) disabled", 30, 240);
-    }
-    if (displayAnts) {
-      ctx.fillStyle = "#CCCCCC";
-      ctx.fillText("Ants (A) displayed", 30, 280);
-    } else {
-      ctx.fillStyle = "#808080";
-      ctx.fillText("Ants (A) hidden", 30, 280);
-    }
-    if (displayFood) {
-      ctx.fillStyle = "#CCCCCC";
-      ctx.fillText("Food (O) displayed", 30, 320);
-    } else {
-      ctx.fillStyle = "#808080";
-      ctx.fillText("Food (O) hidden", 30, 320);
-    }
-    if (enableDieOnFood) {
-      ctx.fillStyle = "#FF0000";
-      ctx.fillText("Die on starvation (X) enabled", 30, 360);
-    } else {
-      ctx.fillStyle = "#808080";
-      ctx.fillText("Die on starvation (X) disabled", 30, 360);
-    }
-    if (enableSenescence) {
-      ctx.fillStyle = "#FF0000";
-      ctx.fillText("Die on aging (C) enabled", 30, 400);
-    } else {
-      ctx.fillStyle = "#808080";
-      ctx.fillText("Die on aging (C) disabled", 30, 400);
-    }
-    if (displaySensorArea) {
-      ctx.fillStyle = "#CCCC33";
-      ctx.fillText("Sensor (S) displayed", 30, 440);
-    } else {
-      ctx.fillStyle = "#808080";
-      ctx.fillText("Sensor (S) displayed", 30, 440);
-    }
-    if (enableChildKills) {
-      ctx.fillStyle = "#FF0000";
-      ctx.fillText("Allow to kill children (I) enabled", 30, 480);
-    } else {
-      ctx.fillStyle = "#808080";
-      ctx.fillText("Allow to kill children (I) disabled", 30, 480);
-    }
-  } else {
-    ctx.fillStyle = "#808080";
-    ctx.fillText("Display debug (D) disabled", 30, 40);
-  }
-};
-
 const handleFood = () => {
   ants
     //    .filter((ant) => ant.maturity === "adult" || ant.maturity === "elderly")
     .forEach((ant) => {
-      debugger;
       ant.food = ant.food - 1;
       if (ant.food <= 0 && enableDieOnFood) {
         ant.isDead = true;
@@ -557,29 +515,48 @@ const handleFood = () => {
     });
 };
 
+const handleClick = ({ canvasX, canvasY }) => {
+  ants.forEach((ant) => ant.isSelected === false);
+  ants.forEach((ant) => {
+    if (!ant.maturity) {
+      return;
+    }
+    if (
+      canvasX >= ant.x - maturities[ant.maturity].size * 3 &&
+      canvasX <= ant.x + maturities[ant.maturity].size * 3 &&
+      canvasY >= ant.y - maturities[ant.maturity].size * 3 &&
+      canvasY <= ant.y + maturities[ant.maturity].size * 3
+    ) {
+      console.log(ant);
+      ant.isSelected = true;
+    }
+  });
+};
+
 function App() {
   const draw = (ctx, frameCount) => {
-    ctx.beginPath();
-    ctx.fillStyle = "#202020";
-    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    if (!isPaused) {
+      ctx.beginPath();
+      ctx.fillStyle = "#202020";
+      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-    displayHelp(ctx);
-    handleBirthday(frameCount);
-    handleFood();
-    handleDeaths();
-    drawWalls(ctx);
-    if (displayAnts) {
-      drawAnts(ctx, ants);
+      displayHelp(ctx);
+      handleBirthday(frameCount);
+      handleFood();
+      handleDeaths();
+      drawWalls(ctx);
+      if (displayAnts) {
+        drawAnts(ctx, ants);
+      }
+      handleFatigue(ants);
+      handleDirectionChange();
+      handleMoveAnts();
+      handleContacts();
     }
-    handleFatigue(ants);
-    handleDirectionChange();
-    handleMoveAnts();
-    handleContacts();
   };
-
   return (
     <div className="App">
-      <AntHill draw={draw} />
+      <AntHill draw={draw} handleClick={handleClick} />
     </div>
   );
 }

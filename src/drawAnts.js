@@ -7,6 +7,7 @@ import {
   displaySensorArea,
   displayEyes,
   displayFood,
+  maturities,
   NORMAL_MODE,
   FLEEING_MODE,
   HUNTING_MODE,
@@ -48,15 +49,19 @@ const drawEyes = (ctx, ant) => {
   //  ctx.fillStyle = `#${hsl.hex(h, s, l + 30)}`;
   ctx.fillStyle = "#ffffff";
   ctx.arc(
-    ant.x + Math.cos(ant.direction + Math.PI / 6) * ant.size,
-    ant.y + Math.sin(ant.direction + Math.PI / 6) * ant.size,
+    ant.x +
+      Math.cos(ant.direction + Math.PI / 6) * maturities[ant.maturity].size,
+    ant.y +
+      Math.sin(ant.direction + Math.PI / 6) * maturities[ant.maturity].size,
     eyeSize,
     0,
     2 * Math.PI
   );
   ctx.arc(
-    ant.x + Math.cos(ant.direction - Math.PI / 6) * ant.size,
-    ant.y + Math.sin(ant.direction - Math.PI / 6) * ant.size,
+    ant.x +
+      Math.cos(ant.direction - Math.PI / 6) * maturities[ant.maturity].size,
+    ant.y +
+      Math.sin(ant.direction - Math.PI / 6) * maturities[ant.maturity].size,
     eyeSize,
     0,
     2 * Math.PI
@@ -75,7 +80,6 @@ const drawEyes = (ctx, ant) => {
       break;
     case HUNTING_MODE:
       pupilColor = "#ff0000";
-      debugger;
       break;
     case MATING_MODE:
       pupilColor = "#ff00ff";
@@ -87,15 +91,19 @@ const drawEyes = (ctx, ant) => {
   /// ctx.fillStyle = `#${hsl.hex(h, s, l - 30)}`;
   ctx.fillStyle = pupilColor;
   ctx.arc(
-    ant.x + Math.cos(ant.direction + Math.PI / 6) * ant.size,
-    ant.y + Math.sin(ant.direction + Math.PI / 6) * ant.size,
+    ant.x +
+      Math.cos(ant.direction + Math.PI / 6) * maturities[ant.maturity].size,
+    ant.y +
+      Math.sin(ant.direction + Math.PI / 6) * maturities[ant.maturity].size,
     pupilSize,
     0,
     2 * Math.PI
   );
   ctx.arc(
-    ant.x + Math.cos(ant.direction - Math.PI / 6) * ant.size,
-    ant.y + Math.sin(ant.direction - Math.PI / 6) * ant.size,
+    ant.x +
+      Math.cos(ant.direction - Math.PI / 6) * maturities[ant.maturity].size,
+    ant.y +
+      Math.sin(ant.direction - Math.PI / 6) * maturities[ant.maturity].size,
     pupilSize,
     0,
     2 * Math.PI
@@ -110,8 +118,12 @@ const drawAntenna = (ctx, ant) => {
   ctx.beginPath();
   ctx.moveTo(ant.x, ant.y);
   ctx.lineTo(
-    ant.x + Math.cos(ant.direction - Math.PI / 6) * ant.size * 10,
-    ant.y + Math.sin(ant.direction - Math.PI / 6) * ant.size * 10
+    ant.x +
+      Math.cos(ant.direction - Math.PI / 6) *
+        maturities[ant.maturity].size *
+        10,
+    ant.y +
+      Math.sin(ant.direction - Math.PI / 6) * maturities[ant.maturity].size * 10
   );
   ctx.lineWidth = 1;
   ctx.strokeStyle = sides[ant.side].color;
@@ -121,8 +133,12 @@ const drawAntenna = (ctx, ant) => {
   ctx.beginPath();
   ctx.moveTo(ant.x, ant.y);
   ctx.lineTo(
-    ant.x + Math.cos(ant.direction + Math.PI / 6) * ant.size * 10,
-    ant.y + Math.sin(ant.direction + Math.PI / 6) * ant.size * 10
+    ant.x +
+      Math.cos(ant.direction + Math.PI / 6) *
+        maturities[ant.maturity].size *
+        10,
+    ant.y +
+      Math.sin(ant.direction + Math.PI / 6) * maturities[ant.maturity].size * 10
   );
   ctx.lineWidth = 1;
   ctx.strokeStyle = sides[ant.side].color;
@@ -146,8 +162,9 @@ export const drawAnts = (ctx, ants) => {
     ctx.ellipse(
       ant.x,
       ant.y,
-      ant.size * 2,
-      ant.size + ant.size * Math.abs(ant.oscillator),
+      maturities[ant.maturity].size * 2,
+      maturities[ant.maturity].size +
+        maturities[ant.maturity].size * Math.abs(ant.oscillator),
       ant.direction,
       0,
       2 * Math.PI
@@ -177,8 +194,8 @@ export const drawAnts = (ctx, ants) => {
     ctx.beginPath();
     ctx.moveTo(ant.x, ant.y);
     ctx.lineTo(
-      ant.x + Math.cos(ant.direction) * ant.size * 2,
-      ant.y + Math.sin(ant.direction) * ant.size * 2
+      ant.x + Math.cos(ant.direction) * maturities[ant.maturity].size * 2,
+      ant.y + Math.sin(ant.direction) * maturities[ant.maturity].size * 2
     );
     ctx.lineWidth = 1;
     ctx.strokeStyle = sides[ant.side].color;
@@ -199,6 +216,13 @@ export const drawAnts = (ctx, ants) => {
 
     if (displaySensorArea) {
       drawSensorArea(ctx, ant);
+    }
+    if (ant.isSelected) {
+      ctx.beginPath();
+      ctx.strokeStyle = "#ff8888";
+      ctx.fillStyle = "#ffffff";
+      ctx.arc(ant.x, ant.y, maturities[ant.maturity].size * 3, 0, 2 * Math.PI);
+      ctx.stroke();
     }
   });
 };
