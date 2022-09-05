@@ -31,7 +31,7 @@ export const FOX_SIDE = "FOX_SIDE";
 const NUMBER_PER_SIDE = 30;
 
 const FOOD_LOW = 1000;
-const FOOD_BOOST_NEWBORN = 600;
+const FOOD_BOOST_NEWBORN = 900;
 
 let selectedAnt = null;
 
@@ -121,7 +121,7 @@ const handleMouseMove = ({ canvasX, canvasY }) => {
   cursorX = canvasX;
   cursorY = canvasY;
 };
-export const listOfWalls =
+export let listOfWalls =
   WALL_TEMPLATES[Math.floor(Math.random() * WALL_TEMPLATES.length)];
 
 export const listOfDeaths = [];
@@ -270,6 +270,13 @@ document.addEventListener(
     }
     if (e.key === "D") {
       debugger;
+    }
+    if (e.key === "K") {
+      ants = [];
+    }
+    if (e.key === ">") {
+      listOfWalls =
+        WALL_TEMPLATES[Math.floor(Math.random() * WALL_TEMPLATES.length)];
     }
   },
   false
@@ -456,7 +463,7 @@ function handleBirth(ant, otherAnt) {
   );
 
   const size =
-    Math.floor(ant.size + otherAnt.size) / 2 - 0.1 + Math.random() * 0.2;
+    Math.floor(ant.size + otherAnt.size) / 2 - 0.2 + Math.random() * 0.4;
   const newAnt = {
     id: uuidv4(),
     name: generateStupidName(),
@@ -512,9 +519,11 @@ const handleContacts = () => {
               otherAnt.hitPoints = otherAnt.hitPoints - ant.strength;
               if (otherAnt.hitPoints <= 0) {
                 otherAnt.isDead = true;
+                listOfDeaths.push({ x: otherAnt.x, y: otherAnt.y });
+                ant.food = ant.food + otherAnt.food;
+              } else {
+                otherAnt.isInjuried = true;
               }
-              listOfDeaths.push({ x: otherAnt.x, y: otherAnt.y });
-              ant.food = ant.food + otherAnt.food / 2;
             }
           }
         }

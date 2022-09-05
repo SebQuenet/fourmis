@@ -93,6 +93,10 @@ export const displayHelp = (ctx) => {
       ctx.fillStyle = "#FF0000";
       ctx.fillText("Allow to breed (B) disabled", 30, 520);
     }
+    ctx.fillStyle = "#880000";
+    ctx.fillText(`Kill everybody, (K)`, 30, 560);
+    ctx.fillStyle = "#808080";
+    ctx.fillText(`Randomize walls, (>)`, 30, 600);
   } else {
     ctx.fillStyle = "#808080";
     ctx.fillText("Display debug (d) disabled", 30, 40);

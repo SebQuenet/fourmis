@@ -50,18 +50,26 @@ const drawEyes = (ctx, ant) => {
   ctx.fillStyle = "#ffffff";
   ctx.arc(
     ant.x +
-      Math.cos(ant.direction + Math.PI / 6) * maturities[ant.maturity].size,
+      Math.cos(ant.direction + Math.PI / 6) *
+        maturities[ant.maturity].size *
+        ant.size,
     ant.y +
-      Math.sin(ant.direction + Math.PI / 6) * maturities[ant.maturity].size,
+      Math.sin(ant.direction + Math.PI / 6) *
+        maturities[ant.maturity].size *
+        ant.size,
     eyeSize,
     0,
     2 * Math.PI
   );
   ctx.arc(
     ant.x +
-      Math.cos(ant.direction - Math.PI / 6) * maturities[ant.maturity].size,
+      Math.cos(ant.direction - Math.PI / 6) *
+        maturities[ant.maturity].size *
+        ant.size,
     ant.y +
-      Math.sin(ant.direction - Math.PI / 6) * maturities[ant.maturity].size,
+      Math.sin(ant.direction - Math.PI / 6) *
+        maturities[ant.maturity].size *
+        ant.size,
     eyeSize,
     0,
     2 * Math.PI
@@ -92,18 +100,26 @@ const drawEyes = (ctx, ant) => {
   ctx.fillStyle = pupilColor;
   ctx.arc(
     ant.x +
-      Math.cos(ant.direction + Math.PI / 6) * maturities[ant.maturity].size,
+      Math.cos(ant.direction + Math.PI / 6) *
+        maturities[ant.maturity].size *
+        ant.size,
     ant.y +
-      Math.sin(ant.direction + Math.PI / 6) * maturities[ant.maturity].size,
+      Math.sin(ant.direction + Math.PI / 6) *
+        maturities[ant.maturity].size *
+        ant.size,
     pupilSize,
     0,
     2 * Math.PI
   );
   ctx.arc(
     ant.x +
-      Math.cos(ant.direction - Math.PI / 6) * maturities[ant.maturity].size,
+      Math.cos(ant.direction - Math.PI / 6) *
+        maturities[ant.maturity].size *
+        ant.size,
     ant.y +
-      Math.sin(ant.direction - Math.PI / 6) * maturities[ant.maturity].size,
+      Math.sin(ant.direction - Math.PI / 6) *
+        maturities[ant.maturity].size *
+        ant.size,
     pupilSize,
     0,
     2 * Math.PI
@@ -121,9 +137,13 @@ const drawAntenna = (ctx, ant) => {
     ant.x +
       Math.cos(ant.direction - Math.PI / 6) *
         maturities[ant.maturity].size *
+        ant.size *
         10,
     ant.y +
-      Math.sin(ant.direction - Math.PI / 6) * maturities[ant.maturity].size * 10
+      Math.sin(ant.direction - Math.PI / 6) *
+        maturities[ant.maturity].size *
+        ant.size *
+        10
   );
   ctx.lineWidth = 1;
   ctx.strokeStyle = sides[ant.side].color;
@@ -136,9 +156,13 @@ const drawAntenna = (ctx, ant) => {
     ant.x +
       Math.cos(ant.direction + Math.PI / 6) *
         maturities[ant.maturity].size *
+        ant.size *
         10,
     ant.y +
-      Math.sin(ant.direction + Math.PI / 6) * maturities[ant.maturity].size * 10
+      Math.sin(ant.direction + Math.PI / 6) *
+        maturities[ant.maturity].size *
+        ant.size *
+        10
   );
   ctx.lineWidth = 1;
   ctx.strokeStyle = sides[ant.side].color;
@@ -162,9 +186,9 @@ export const drawAnts = (ctx, ants) => {
     ctx.ellipse(
       ant.x,
       ant.y,
-      maturities[ant.maturity].size * 2,
-      maturities[ant.maturity].size +
-        maturities[ant.maturity].size * Math.abs(ant.oscillator),
+      maturities[ant.maturity].size * ant.size * 2,
+      maturities[ant.maturity].size * ant.size +
+        maturities[ant.maturity].size * ant.size * Math.abs(ant.oscillator),
       ant.direction,
       0,
       2 * Math.PI
@@ -194,8 +218,10 @@ export const drawAnts = (ctx, ants) => {
     ctx.beginPath();
     ctx.moveTo(ant.x, ant.y);
     ctx.lineTo(
-      ant.x + Math.cos(ant.direction) * maturities[ant.maturity].size * 2,
-      ant.y + Math.sin(ant.direction) * maturities[ant.maturity].size * 2
+      ant.x +
+        Math.cos(ant.direction) * maturities[ant.maturity].size * ant.size * 2,
+      ant.y +
+        Math.sin(ant.direction) * maturities[ant.maturity].size * ant.size * 2
     );
     ctx.lineWidth = 1;
     ctx.strokeStyle = sides[ant.side].color;
@@ -222,7 +248,13 @@ export const drawAnts = (ctx, ants) => {
       ctx.strokeStyle = "#ff8888";
       ctx.fillStyle = "#ffffff";
       ctx.lineWidth = 3;
-      ctx.arc(ant.x, ant.y, maturities[ant.maturity].size * 3, 0, 2 * Math.PI);
+      ctx.arc(
+        ant.x,
+        ant.y,
+        maturities[ant.maturity].size * ant.size * 3,
+        0,
+        2 * Math.PI
+      );
       ctx.stroke();
     }
   });
