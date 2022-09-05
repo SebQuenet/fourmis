@@ -12,6 +12,7 @@ const DEFAULT_SPEED = 1;
 const DEFAULT_ENERGY = 2;
 const DEFAULT_FOOD = 4000;
 const DEFAULT_HIT_POINTS = 100;
+const DEFAULT_SIZE = 1;
 const DEFAULT_STRENGTH = 40;
 const DEFAULT_REACH = 30;
 const DEFAULT_DR = 5;
@@ -74,6 +75,7 @@ export let displayWillBreed = false;
 export let displaySensorArea = false;
 export let displayEyes = true;
 export let displayWalls = true;
+export let enableBreed = true;
 export let enablePrey = false;
 export let enableGate = false;
 export let enableSenescence = true;
@@ -138,6 +140,7 @@ const canAntKillOtherAnt = (ant, otherAnt) => {
   ) {
     return false;
   }
+
   if (
     Math.sqrt((ant.x - otherAnt.x) ** 2 + (ant.y - otherAnt.y) ** 2) > ant.reach
   ) {
@@ -171,7 +174,7 @@ const antFactory = ({ side }) => ({
   color: "#44CCCC",
   canBreed: false,
   bredRest: 0,
-  size: maturities["baby"].size,
+  size: DEFAULT_SIZE,
   age: 1,
   maturity: "child",
   generation: 1,
@@ -200,7 +203,10 @@ document.addEventListener(
       ants = [...ants, antFactory({ side: FOX_SIDE })];
     }
     if (e.key === "h") {
-      ants = [...ants, antFactory({ side: FOX_SIDE })];
+      ants = [...ants, antFactory({ side: HEN_SIDE })];
+    }
+    if (e.key === "B") {
+      enableBreed = !enableBreed;
     }
     if (e.key === "b") {
       displayWillBreed = !displayWillBreed;
@@ -298,6 +304,7 @@ const handleDirectionChange = () => {
 
     const mates = adultNeighbors.filter(
       (otherAnt) =>
+        enableBreed &&
         areAntsSameSide(ant, otherAnt) &&
         canBothAntsHaveBaby(ant, otherAnt) &&
         isAntAdult(ant)
@@ -423,6 +430,9 @@ function handleBirth(ant, otherAnt) {
   const sensorArea = Math.floor(
     Math.floor(ant.sensorArea + otherAnt.sensorArea) / 2 - 4 + Math.random() * 8
   );
+
+  const size =
+    Math.floor(ant.size + otherAnt.size) / 2 - 0.1 + Math.random() * 0.2;
   const newAnt = {
     id: uuidv4(),
     name: generateStupidName(),
@@ -448,7 +458,7 @@ function handleBirth(ant, otherAnt) {
     canBreed: false,
     hasBred: false,
     mode: NORMAL_MODE,
-    size: maturities["baby"].size,
+    size: size > DEFAULT_SIZE ? size : DEFAULT_SIZE,
     age: 0,
     bredRest: 0,
     generation:
@@ -466,6 +476,7 @@ const handleContacts = () => {
     ants.forEach((otherAnt) => {
       if (isContactBetween(ant, otherAnt)) {
         if (
+          enableBreed &&
           areAntsSameSide(ant, otherAnt) &&
           canBothAntsBreed(ant, otherAnt) &&
           canBothAntsHaveBaby(ant, otherAnt)

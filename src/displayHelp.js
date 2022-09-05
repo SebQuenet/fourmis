@@ -11,6 +11,7 @@ import {
   enableDieOnFood,
   enableSenescence,
   displaySensorArea,
+  enableBreed,
   enableChildKills,
 } from "./App";
 
@@ -84,6 +85,13 @@ export const displayHelp = (ctx) => {
     } else {
       ctx.fillStyle = "#808080";
       ctx.fillText("Allow to kill children (I) disabled", 30, 480);
+    }
+    if (enableBreed) {
+      ctx.fillStyle = "#00FF00";
+      ctx.fillText("Allow to breed (+B) enabled", 30, 520);
+    } else {
+      ctx.fillStyle = "#FF0000";
+      ctx.fillText("Allow to breed (+B) disabled", 30, 520);
     }
   } else {
     ctx.fillStyle = "#808080";
