@@ -214,6 +214,21 @@ export const drawAnts = (ctx, ants) => {
         ctx.stroke();
       }
     }
+    if (ant.isInjuried) {
+      ctx.beginPath();
+      ctx.fillStyle = "#ff0000";
+      ctx.ellipse(
+        ant.x,
+        ant.y,
+        maturities[ant.maturity].size * ant.size * 2,
+        maturities[ant.maturity].size * ant.size +
+          maturities[ant.maturity].size * ant.size * Math.abs(ant.oscillator),
+        ant.direction,
+        Math.PI - Math.PI / 3,
+        Math.PI + Math.PI / 3
+      );
+      ctx.fill();
+    }
 
     ctx.beginPath();
     ctx.moveTo(ant.x, ant.y);

@@ -12,6 +12,7 @@ const DEFAULT_SPEED = 1;
 const DEFAULT_ENERGY = 2;
 const DEFAULT_FOOD = 4000;
 const DEFAULT_HIT_POINTS = 100;
+const DEFAULT_MAX_HIT_POINTS = 100;
 const DEFAULT_SIZE = 1;
 const DEFAULT_STRENGTH = 40;
 const DEFAULT_REACH = 30;
@@ -175,6 +176,7 @@ const antFactory = ({ side, x, y }) => ({
   speed: DEFAULT_SPEED,
   energy: DEFAULT_ENERGY,
   hitPoints: DEFAULT_HIT_POINTS,
+  maxHitPoints: DEFAULT_MAX_HIT_POINTS,
   strength: DEFAULT_STRENGTH,
   reach: DEFAULT_REACH,
   damageReduction: DEFAULT_DR,
@@ -285,6 +287,12 @@ document.addEventListener(
 const handleBirthday = (frameCount) => {
   ants.forEach((ant) => {
     ant.oscillator = Math.cos(frameCount / 10);
+    if (ant.hitPoints < ant.maxHitPoints) {
+      ant.hitPoints += 0.25;
+      if (ant.hitPoints >= ant.maxHitPoints) {
+        ant.isInjuried = false;
+      }
+    }
     if (ant.bredRest > 0) {
       ant.bredRest = ant.bredRest - 1;
     }
@@ -400,8 +408,11 @@ const handleMoveAnts = () => {
       default:
         speedFactor = 1;
     }
-    const wantedX = ant.x + Math.cos(ant.direction) * ant.speed * speedFactor;
-    const wantedY = ant.y + Math.sin(ant.direction) * ant.speed * speedFactor;
+    const injuryFactor = ant.isInjuried ? 2 / 3 : 1;
+    const wantedX =
+      ant.x + Math.cos(ant.direction) * ant.speed * speedFactor * injuryFactor;
+    const wantedY =
+      ant.y + Math.sin(ant.direction) * ant.speed * speedFactor * injuryFactor;
 
     let isAntInsideWall = false;
     listOfWalls.forEach((wall) => {
@@ -478,6 +489,7 @@ function handleBirth(ant, otherAnt) {
     hitPoints: Math.floor(
       (ant.hitPoints + otherAnt.hitPoints) / 2 + Math.random() * 10 - 5
     ),
+    maxHitPoints: Math.floor(ant.maxHitPoints + otherAnt.maxHitPoints) / 2,
     strength: Math.floor(
       (ant.strength + otherAnt.strength) / 2 + Math.random() * 4 - 2
     ),
