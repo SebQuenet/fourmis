@@ -18,6 +18,9 @@ const DEFAULT_STRENGTH = 40;
 const DEFAULT_REACH = 30;
 const DEFAULT_DR = 5;
 
+export const DEFAULT_PERCEPTION = 80;
+export const DEFAULT_TRACKING = 80;
+
 export const DEFAULT_SENSOR_AREA = 80;
 
 export const NORMAL_MODE = "NORMAL_MODE";
@@ -32,7 +35,7 @@ export const FOX_SIDE = "FOX_SIDE";
 const NUMBER_PER_SIDE = 30;
 
 const FOOD_LOW = 1000;
-const FOOD_BOOST_NEWBORN = 900;
+const FOOD_BOOST_NEWBORN = 700;
 
 let selectedAnt = null;
 
@@ -141,6 +144,18 @@ const isContactBetween = (ant, otherAnt) =>
 const canBothAntsHaveBaby = (ant, otherAnt) =>
   ant.bredRest === 0 && otherAnt.bredRest === 0;
 
+const isAntAThreatForOtherAnt = (ant, otherAnt) => {
+  if (
+    !enableChildKills &&
+    (otherAnt.maturity === "newborn" ||
+      otherAnt.maturity === "baby" ||
+      otherAnt.maturity === "child")
+  ) {
+    return false;
+  }
+
+  return ant.maturity === "adult" && sides[ant.side].canKill[otherAnt.side];
+};
 const canAntKillOtherAnt = (ant, otherAnt) => {
   if (
     !enableChildKills &&
@@ -181,6 +196,8 @@ const antFactory = ({ side, x, y }) => ({
   reach: DEFAULT_REACH,
   damageReduction: DEFAULT_DR,
   sensorArea: DEFAULT_SENSOR_AREA,
+  trackingArea: DEFAULT_TRACKING,
+  perceptionArea: DEFAULT_PERCEPTION,
   isTired: false,
   color: "#44CCCC",
   canBreed: false,
@@ -316,6 +333,28 @@ const handleBirthday = (frameCount) => {
   });
 };
 
+const distanceBetweenAnts = (ant, otherAnt) => {
+  return Math.sqrt((ant.x - otherAnt.x) ** 2 + (ant.y - otherAnt.y) ** 2);
+};
+
+const handlePerceptions = () => {
+  ants.forEach((ant) => {
+    ant.mode = NORMAL_MODE;
+    ant.preys = ants.filter(
+      (otherAnt) =>
+        otherAnt.id !== ant.id &&
+        isAntAThreatForOtherAnt(ant, otherAnt) &&
+        distanceBetweenAnts(ant, otherAnt) < ant.trackingArea
+    );
+    ant.predators = ants.filter(
+      (otherAnt) =>
+        otherAnt.id !== ant.id &&
+        isAntAThreatForOtherAnt(ant, otherAnt) &&
+        distanceBetweenAnts(ant, otherAnt) < ant.perceptionArea
+    );
+  });
+};
+
 const handleDirectionChange = () => {
   ants.forEach((ant) => {
     if (ant.isTired) {
@@ -333,7 +372,7 @@ const handleDirectionChange = () => {
     );
 
     const threats = adultNeighbors.filter((otherAnt) =>
-      canAntKillOtherAnt(otherAnt, ant)
+      isAntAThreatForOtherAnt(otherAnt, ant)
     );
     if (threats.length > 0) {
       const threat = threats[0];
@@ -356,7 +395,7 @@ const handleDirectionChange = () => {
 
     if (enablePrey || ant.food < FOOD_LOW) {
       const preys = neighbors.filter((otherAnt) =>
-        canAntKillOtherAnt(ant, otherAnt)
+        isAntAThreatForOtherAnt(ant, otherAnt)
       );
       if (preys.length > 0) {
         const prey = preys[0];
@@ -473,6 +512,18 @@ function handleBirth(ant, otherAnt) {
     Math.floor(ant.sensorArea + otherAnt.sensorArea) / 2 - 4 + Math.random() * 8
   );
 
+  const trackingArea = Math.floor(
+    Math.floor(ant.trackingArea + otherAnt.trackingArea) / 2 -
+      4 +
+      Math.random() * 8
+  );
+
+  const perceptionArea = Math.floor(
+    Math.floor(ant.perceptionArea + otherAnt.perceptionArea) / 2 -
+      4 +
+      Math.random() * 8
+  );
+
   const size =
     Math.floor(ant.size + otherAnt.size) / 2 - 0.2 + Math.random() * 0.4;
   const newAnt = {
@@ -484,6 +535,8 @@ function handleBirth(ant, otherAnt) {
     brood: 0,
     sensorArea:
       sensorArea > DEFAULT_SENSOR_AREA ? sensorArea : DEFAULT_SENSOR_AREA,
+    trackingArea: trackingArea > 0 ? trackingArea : 0,
+    perceptionArea: perceptionArea > 0 ? perceptionArea : 0,
     speed: speed > DEFAULT_SPEED ? speed : DEFAULT_SPEED,
     energy: DEFAULT_ENERGY,
     hitPoints: Math.floor(
@@ -625,6 +678,7 @@ function App() {
         drawAnts(ctx, ants);
       }
       handleFatigue(ants);
+      handlePerceptions();
       handleDirectionChange();
       handleMoveAnts();
       handleContacts();
