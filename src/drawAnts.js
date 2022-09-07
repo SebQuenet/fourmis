@@ -14,6 +14,50 @@ import {
   MATING_MODE,
 } from "./App";
 
+const drawPerceptionCircles = (ctx, ant) => {
+  ctx.beginPath();
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = "#C0E0C0";
+  ctx.arc(ant.x, ant.y, ant.perceptionArea, 0, 2 * Math.PI);
+  ctx.stroke();
+
+  ctx.font = "20px monospace";
+  ctx.fillStyle = "#C0E0C0";
+  ctx.fillText(
+    `${Math.floor(ant.perceptionArea)}`,
+    ant.x - ant.perceptionArea + 5,
+    ant.y
+  );
+
+  ctx.beginPath();
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = "#E0C0C0";
+  ctx.arc(ant.x, ant.y, ant.trackingArea, 0, 2 * Math.PI);
+  ctx.stroke();
+
+  ctx.font = "20px monospace";
+  ctx.fillStyle = "#E0C0C0";
+  ctx.fillText(
+    `${Math.floor(ant.trackingArea)}`,
+    ant.x + ant.trackingArea - 30,
+    ant.y
+  );
+
+  ctx.beginPath();
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = "#E0C0D0";
+  ctx.arc(ant.x, ant.y, ant.pheromonsArea, 0, 2 * Math.PI);
+  ctx.stroke();
+
+  ctx.font = "20px monospace";
+  ctx.fillStyle = "#E0C0D0";
+  ctx.fillText(
+    `${Math.floor(ant.pheromonsArea)}`,
+    ant.x,
+    ant.y - ant.pheromonsArea + 5
+  );
+};
+
 const drawSensorArea = (ctx, ant) => {
   ctx.lineWidth = 0.25;
   ctx.strokeRect(
@@ -257,6 +301,7 @@ export const drawAnts = (ctx, ants) => {
 
     if (displaySensorArea) {
       drawSensorArea(ctx, ant);
+      drawPerceptionCircles(ctx, ant);
     }
     if (ant.isSelected) {
       ctx.beginPath();

@@ -97,6 +97,8 @@ export const displayHelp = (ctx) => {
     ctx.fillText(`Kill everybody, (K)`, 30, 560);
     ctx.fillStyle = "#808080";
     ctx.fillText(`Randomize walls, (>)`, 30, 600);
+    ctx.fillStyle = "#880000";
+    ctx.fillText(`Snap, (S)`, 30, 640);
   } else {
     ctx.fillStyle = "#808080";
     ctx.fillText("Display debug (d) disabled", 30, 40);

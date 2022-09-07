@@ -20,6 +20,7 @@ const DEFAULT_DR = 5;
 
 export const DEFAULT_PERCEPTION = 80;
 export const DEFAULT_TRACKING = 80;
+export const DEFAULT_PHEROMON = 120;
 
 export const DEFAULT_SENSOR_AREA = 80;
 
@@ -197,6 +198,7 @@ const antFactory = ({ side, x, y }) => ({
   damageReduction: DEFAULT_DR,
   sensorArea: DEFAULT_SENSOR_AREA,
   trackingArea: DEFAULT_TRACKING,
+  pheromonsArea: DEFAULT_PHEROMON,
   perceptionArea: DEFAULT_PERCEPTION,
   isTired: false,
   color: "#44CCCC",
@@ -293,6 +295,9 @@ document.addEventListener(
     if (e.key === "K") {
       ants = [];
     }
+    if (e.key === "S") {
+      ants = ants.filter(() => Math.random() > 0.5);
+    }
     if (e.key === ">") {
       listOfWalls =
         WALL_TEMPLATES[Math.floor(Math.random() * WALL_TEMPLATES.length)];
@@ -342,15 +347,24 @@ const handlePerceptions = () => {
     ant.mode = NORMAL_MODE;
     ant.preys = ants.filter(
       (otherAnt) =>
+        distanceBetweenAnts(ant, otherAnt) < ant.trackingArea &&
         otherAnt.id !== ant.id &&
-        isAntAThreatForOtherAnt(ant, otherAnt) &&
-        distanceBetweenAnts(ant, otherAnt) < ant.trackingArea
+        isAntAThreatForOtherAnt(ant, otherAnt)
     );
     ant.predators = ants.filter(
       (otherAnt) =>
+        distanceBetweenAnts(ant, otherAnt) < ant.perceptionArea &&
         otherAnt.id !== ant.id &&
-        isAntAThreatForOtherAnt(ant, otherAnt) &&
-        distanceBetweenAnts(ant, otherAnt) < ant.perceptionArea
+        isAntAThreatForOtherAnt(ant, otherAnt)
+    );
+    ant.mates = ants.filter(
+      (otherAnt) =>
+        distanceBetweenAnts(ant, otherAnt) < ant.pheromonsArea &&
+        otherAnt.id !== ant.id &&
+        enableBreed &&
+        areAntsSameSide(ant, otherAnt) &&
+        canBothAntsHaveBaby(ant, otherAnt) &&
+        isAntAdult(ant)
     );
   });
 };
@@ -524,6 +538,12 @@ function handleBirth(ant, otherAnt) {
       Math.random() * 8
   );
 
+  const pheromonsArea = Math.floor(
+    Math.floor(ant.pheromonsArea + otherAnt.pheromonsArea) / 2 -
+      4 +
+      Math.random() * 8
+  );
+
   const size =
     Math.floor(ant.size + otherAnt.size) / 2 - 0.2 + Math.random() * 0.4;
   const newAnt = {
@@ -537,6 +557,7 @@ function handleBirth(ant, otherAnt) {
       sensorArea > DEFAULT_SENSOR_AREA ? sensorArea : DEFAULT_SENSOR_AREA,
     trackingArea: trackingArea > 0 ? trackingArea : 0,
     perceptionArea: perceptionArea > 0 ? perceptionArea : 0,
+    pheromonsArea: pheromonsArea > 0 ? pheromonsArea : 0,
     speed: speed > DEFAULT_SPEED ? speed : DEFAULT_SPEED,
     energy: DEFAULT_ENERGY,
     hitPoints: Math.floor(
