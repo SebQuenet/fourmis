@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { hex, rgb } from "color-convert";
+import { hsl, hex, rgb } from "color-convert";
 
 import generateStupidName from "sillyname";
 
@@ -182,34 +182,37 @@ const randomSide = () => {
   return sidesArray[randomIndex];
 };
 
-const antFactory = ({ side, x, y }) => ({
-  id: uuidv4(),
-  name: generateStupidName(),
-  x: x ? x : Math.floor(Math.random() * 3600) + 200,
-  y: y ? y : Math.floor(Math.random() * 1600) + 200,
-  direction: Math.PI / 2,
-  food: DEFAULT_FOOD,
-  speed: DEFAULT_SPEED,
-  energy: DEFAULT_ENERGY,
-  hitPoints: DEFAULT_HIT_POINTS,
-  maxHitPoints: DEFAULT_MAX_HIT_POINTS,
-  strength: DEFAULT_STRENGTH,
-  reach: DEFAULT_REACH,
-  damageReduction: DEFAULT_DR,
-  sensorArea: DEFAULT_SENSOR_AREA,
-  trackingArea: DEFAULT_TRACKING,
-  pheromonsArea: DEFAULT_PHEROMON,
-  perceptionArea: DEFAULT_PERCEPTION,
-  isTired: false,
-  color: "#44CCCC",
-  canBreed: false,
-  bredRest: 0,
-  size: DEFAULT_SIZE,
-  age: 1,
-  maturity: "child",
-  generation: 1,
-  side: side ? side : randomSide(),
-});
+const antFactory = ({ side, x, y }) => {
+  const antSide = side ? side : randomSide();
+  return {
+    id: uuidv4(),
+    name: generateStupidName(),
+    x: x ? x : Math.floor(Math.random() * 3600) + 200,
+    y: y ? y : Math.floor(Math.random() * 1600) + 200,
+    direction: Math.PI / 2,
+    food: DEFAULT_FOOD,
+    speed: DEFAULT_SPEED,
+    energy: DEFAULT_ENERGY,
+    hitPoints: DEFAULT_HIT_POINTS,
+    maxHitPoints: DEFAULT_MAX_HIT_POINTS,
+    strength: DEFAULT_STRENGTH,
+    reach: DEFAULT_REACH,
+    damageReduction: DEFAULT_DR,
+    sensorArea: DEFAULT_SENSOR_AREA,
+    trackingArea: DEFAULT_TRACKING,
+    pheromonsArea: DEFAULT_PHEROMON,
+    perceptionArea: DEFAULT_PERCEPTION,
+    isTired: false,
+    color: sides[side].color,
+    canBreed: false,
+    bredRest: 0,
+    size: DEFAULT_SIZE,
+    age: 1,
+    maturity: "child",
+    generation: 1,
+    side: antSide,
+  };
+};
 
 export let ants = [];
 
@@ -385,15 +388,6 @@ const handleDirectionChange = () => {
       (otherAnt) => isAntAdult(otherAnt) && otherAnt.id !== ant.id
     );
 
-    const threats = adultNeighbors.filter((otherAnt) =>
-      isAntAThreatForOtherAnt(otherAnt, ant)
-    );
-    if (threats.length > 0) {
-      const threat = threats[0];
-      ant.direction = Math.PI + Math.atan2(threat.y - ant.y, threat.x - ant.x);
-      ant.mode = FLEEING_MODE;
-    }
-
     const mates = adultNeighbors.filter(
       (otherAnt) =>
         enableBreed &&
@@ -405,6 +399,15 @@ const handleDirectionChange = () => {
       const mate = mates[0];
       ant.direction = Math.atan2(mate.y - ant.y, mate.x - ant.x);
       ant.mode = MATING_MODE;
+    }
+
+    const threats = adultNeighbors.filter((otherAnt) =>
+      isAntAThreatForOtherAnt(otherAnt, ant)
+    );
+    if (threats.length > 0) {
+      const threat = threats[0];
+      ant.direction = Math.PI + Math.atan2(threat.y - ant.y, threat.x - ant.x);
+      ant.mode = FLEEING_MODE;
     }
 
     if (enablePrey || ant.food < FOOD_LOW) {
@@ -520,6 +523,10 @@ function handleBirth(ant, otherAnt) {
     Math.floor(Math.sqrt((b1 * b1 + b2 * b2) / 2)),
   ];
 
+  let [h, s, l] = rgb.hsl(rgbNewAnt);
+  s = Math.floor(s + Math.random(10) - 5);
+  l = Math.floor(l + Math.random(10) - 5);
+
   const speed =
     Math.floor(ant.speed + otherAnt.speed) / 2 - 0.5 + Math.random();
   const sensorArea = Math.floor(
@@ -571,7 +578,7 @@ function handleBirth(ant, otherAnt) {
     damageReduction: Math.floor(
       (ant.damageReduction + otherAnt.damageReduction) / 2
     ),
-    color: `#${rgb.hex(rgbNewAnt)}`,
+    color: `#${hsl.hex([h, s, l])}`,
     canBreed: false,
     hasBred: false,
     mode: NORMAL_MODE,

@@ -67,7 +67,7 @@ const drawSensorArea = (ctx, ant) => {
     ant.sensorArea
   );
   ctx.font = "16px monospace";
-  ctx.fillStyle = sides[ant.side].color;
+  ctx.fillStyle = ant.color;
   ctx.fillText(
     `${Math.floor(ant.sensorArea)}`,
     ant.x - ant.sensorArea / 2,
@@ -86,7 +86,7 @@ const drawSensorArea = (ctx, ant) => {
 };
 
 const drawEyes = (ctx, ant) => {
-  const [h, s, l] = hex.hsl(sides[ant.side].color.substring(1));
+  const [h, s, l] = hex.hsl(ant.color.substring(1));
 
   const eyeSize = 4;
   ctx.beginPath();
@@ -172,8 +172,8 @@ const drawEyes = (ctx, ant) => {
 };
 
 const drawAntenna = (ctx, ant) => {
-  ctx.strokeStyle = sides[ant.side].color;
-  ctx.fillStyle = sides[ant.side].color;
+  ctx.strokeStyle = ant.color;
+  ctx.fillStyle = ant.color;
   ctx.lineWidth = 0.5;
   ctx.beginPath();
   ctx.moveTo(ant.x, ant.y);
@@ -190,7 +190,7 @@ const drawAntenna = (ctx, ant) => {
         10
   );
   ctx.lineWidth = 1;
-  ctx.strokeStyle = sides[ant.side].color;
+  ctx.strokeStyle = ant.color;
   ctx.stroke();
 
   ctx.lineWidth = 0.5;
@@ -209,7 +209,7 @@ const drawAntenna = (ctx, ant) => {
         10
   );
   ctx.lineWidth = 1;
-  ctx.strokeStyle = sides[ant.side].color;
+  ctx.strokeStyle = ant.color;
   ctx.stroke();
 };
 
@@ -222,10 +222,10 @@ export const drawAnts = (ctx, ants) => {
   ants.forEach((ant) => {
     ctx.beginPath();
     if (ant.maturity === "elderly") {
-      const [h, s, l] = hex.hsl(sides[ant.side].color.substring(1));
+      const [h, s, l] = hex.hsl(ant.color.substring(1));
       ctx.fillStyle = `#${hsl.hex(h, s / 2, l - 10)}`;
     } else {
-      ctx.fillStyle = sides[ant.side].color;
+      ctx.fillStyle = ant.color;
     }
     ctx.ellipse(
       ant.x,
@@ -283,7 +283,7 @@ export const drawAnts = (ctx, ants) => {
         Math.sin(ant.direction) * maturities[ant.maturity].size * ant.size * 2
     );
     ctx.lineWidth = 1;
-    ctx.strokeStyle = sides[ant.side].color;
+    ctx.strokeStyle = ant.color;
     ctx.stroke();
 
     if (displayAntenna) {
